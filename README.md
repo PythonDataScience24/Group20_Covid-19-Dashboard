@@ -1,1 +1,1 @@
-# -Group20_Covid-19-Dashboard
+# Group20_Covid-19-Dashboard
