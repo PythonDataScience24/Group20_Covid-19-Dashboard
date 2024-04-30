@@ -44,6 +44,7 @@ df['New_deaths_normalized'] = df['New_deaths'] / df['population']
 # https://medium.com/@m.pierini/time-varying-reproduction-number-rt-theory-and-python-implementation-part-i-basics-and-epiestim-99ea5fc30f51
 # compute Rt for a given country
 country = 'CH'
+# note that the final data point per country has an invalid Rt (division by NaN)
 df['Rt'] = df['New_cases'] / df['New_cases'].shift(-1)
 filtered = df[df['Country_code'] == country]
 # lineplot can be viewed in a jupyter notebook
