@@ -11,7 +11,7 @@ merged1 = df.merge(regions[['alpha-2', 'alpha-3']], left_on='Country_code', righ
 # https://databank.worldbank.org/source/population-estimates-and-projections#
 population = pd.read_csv('./data/d55c23f8-6bb7-4016-88b8-08519f13065e_Data.csv')
 # for simplicity, use a static population number: the average population of 2019 and 2020
-population['population'] = (population['2019 [YR2019]'] + population['2019 [YR2019]']) * 2.0
+population['population'] = (population['2019 [YR2019]'] + population['2019 [YR2019]']) / 2.0
 
 merged = merged1.merge(population[['Country Code', 'population']], left_on='alpha-3', right_on='Country Code')
-
+print(merged.head())
