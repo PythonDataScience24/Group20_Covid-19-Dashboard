@@ -113,7 +113,16 @@ def main():
     df_regions['Rt'] = 0
     df_regions = df_regions.groupby('WHO_region').apply(calc_rt)
 
+    # Add population for each region for normalization
+    pop = df.drop_duplicates(subset='Country', keep='first')
+    pop = pop.groupby('WHO_region')['population'].sum()
+    df_regions= df_regions.join(pop)
 
+    # Create a new dataframe for normalized data
+    df_regions_norm = normalize(df_regions)
+
+    print(df_regions.loc['EURO'])
+    print(df_regions_norm.loc['EURO'])
 
 if(__name__ == '__main__'):
     main()
