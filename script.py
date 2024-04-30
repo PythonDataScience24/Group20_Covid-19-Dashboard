@@ -46,4 +46,5 @@ df['New_deaths_normalized'] = df['New_deaths'] / df['population']
 country = 'CH'
 df['Rt'] = df['New_cases'] / df['New_cases'].shift(-1)
 filtered = df[df['Country_code'] == country]
+# lineplot can be viewed in a jupyter notebook
 sns.lineplot(data=filtered, y='Rt', x='Date_reported')
