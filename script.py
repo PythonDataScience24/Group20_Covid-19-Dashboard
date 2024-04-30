@@ -56,7 +56,7 @@ def main():
 
     # get population per country from a manual CSV export from the world bank:
     # https://databank.worldbank.org/source/population-estimates-and-projections#
-    population = pd.read_csv('./data/d55c23f8-6bb7-4016-88b8-08519f13065e_Data.csv')
+    population = pd.read_csv('./data/populations.csv')
     # for simplicity, use a static population number: the average population between 2019 and 2021
     population['population'] = np.divide((population['2019 [YR2019]'] + population['2020 [YR2020]'] + population['2021 [YR2021]']), 3.0)
 
@@ -67,7 +67,7 @@ def main():
     # Preprocess data
     ########################
 
-    # Replace missing values by 0
+    # Replace missing values by 0 
     df.fillna(0, inplace = True)
 
     # Drop unnecessary columns
