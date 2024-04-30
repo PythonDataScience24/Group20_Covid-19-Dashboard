@@ -100,8 +100,19 @@ def main():
     # Creates a new dataframe with normalized values according to population size
     df_norm = normalize(df)
     country = 'CH'
-    print(df[df['Country_code'] == country])
-    print(df_norm[df_norm['Country_code'] == country])
+    #print(df[df['Country_code'] == country])
+    #print(df_norm[df_norm['Country_code'] == country])
+
+    # Create a separate dataframe for regions
+    df_regions = df.groupby(['WHO_region', 'Date_reported']).aggregate({'New_cases': 'sum', 'Cumulative_cases': 'sum', 'New_deaths': 'sum', 'Cumulative_deaths': 'sum'})
+
+    # Compute deaths per cases
+    df_regions['deaths_per_cases'] = df_regions['Cumulative_deaths'] / df_regions['Cumulative_cases']
+
+    # Compute rt number
+    df_regions['Rt'] = 0
+    df_regions = df_regions.groupby('WHO_region').apply(calc_rt)
+
 
 
 if(__name__ == '__main__'):
