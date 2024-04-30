@@ -12,13 +12,19 @@ def calc_rt(x):
         x: df with calculated rt number
     """
     x['Rt'] = x['New_cases'].shift(-1)/x['New_cases']
+
+    # Forward second last value to last value
+    x['Rt'].iloc[-1] = x['Rt'].iloc[-2] # probably change in future but for now good
+    # Fill rest with 0 for now
+    x['Rt'].fillna(0, inplace= True)
+
     return x
 
 def normalize(df):
     """
     Normalizes the data according to population size and scales it up to cases or deaths per 1000000 inhabitants.
     Important for statistics 3 and 5.
-    
+
     Parameter:
         df_norm: df containing Covid19 data
     Returns:
@@ -89,16 +95,18 @@ def main():
     # https://medium.com/@m.pierini/time-varying-reproduction-number-rt-theory-and-python-implementation-part-i-basics-and-epiestim-99ea5fc30f51
     # compute Rt 
     country = 'CH'
-    # note that the final data point per country has an invalid Rt (division by NaN)
+    # TO DO: find out how missing values handled most reasonable
     df['Rt'] = 0
     df = df.groupby('Country').apply(calc_rt)
 
-    
 
+    
+    # Creates a new dataframe with normalized values according to population size
     df_norm = normalize(df)
 
     print(df[df['Country_code'] == country])
     print(df_norm[df_norm['Country_code'] == country])
+
 
 if(__name__ == '__main__'):
     main()
