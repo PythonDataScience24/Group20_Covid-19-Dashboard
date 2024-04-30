@@ -11,10 +11,10 @@ def calc_rt(x):
     Returns:
         x: df with calculated rt number
     """
-    x['Rt'] = x['New_cases'].shift(-1)/x['New_cases']
+    # use the approximation: Rt = n(t) / n(t-1), where n(t) is new infected at time t. the approximation is from:
+    # https://medium.com/@m.pierini/time-varying-reproduction-number-rt-theory-and-python-implementation-part-i-basics-and-epiestim-99ea5fc30f51
+    x['Rt'] = x['New_cases']/x['New_cases'].shift(1)
 
-    # Forward second last value to last value
-    x['Rt'].iloc[-1] = x['Rt'].iloc[-2] # probably change in future but for now good
     # Fill rest with 0 for now
     x['Rt'].fillna(0, inplace= True)
 
@@ -91,10 +91,6 @@ def main():
     # statistic 5: number of deaths (normalized) calculated in separate df_norm
 
     # statistic 6: the Rt number
-    # use the approximation: Rt = n(t) / n(t-1), where n(t) is new infected at time t. the approximation is from:
-    # https://medium.com/@m.pierini/time-varying-reproduction-number-rt-theory-and-python-implementation-part-i-basics-and-epiestim-99ea5fc30f51
-    # compute Rt 
-    country = 'CH'
     # TO DO: find out how missing values handled most reasonable
     df['Rt'] = 0
     df = df.groupby('Country').apply(calc_rt)
@@ -103,7 +99,7 @@ def main():
     
     # Creates a new dataframe with normalized values according to population size
     df_norm = normalize(df)
-
+    country = 'CH'
     print(df[df['Country_code'] == country])
     print(df_norm[df_norm['Country_code'] == country])
 
