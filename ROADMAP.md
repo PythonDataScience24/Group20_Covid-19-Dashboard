@@ -1,13 +1,11 @@
 ### Milestone 1 - Data manipulation - Deadline: May 2
 
-* Import the data
-* compute simple statistics like
+* Import data and data 
+* compute simple statistics for countries and regions like
   * deaths per cases
-  * number of cases
-  * number of cases (normalized by population)
-  * number of deaths
-  * number of deaths  (normalized by population)
-  * the Rt number
+  * number of cases (absolute and normalized) 
+  * number of deaths (absolute and normalized) 
+  * the Rt number 
 
 ### Milestone 2 - Data selection - Deadline: May 16
 
