@@ -99,9 +99,12 @@ def main():
     
     # Creates a new dataframe with normalized values according to population size
     df_norm = normalize(df)
+
     country = 'CH'
-    #print(df[df['Country_code'] == country])
-    #print(df_norm[df_norm['Country_code'] == country])
+    #print absolute data for specific country
+    print(df[df['Country_code'] == country])
+    #print normalized data for specific country
+    print(df_norm[df_norm['Country_code'] == country])
 
     # Create a separate dataframe for regions
     df_regions = df.groupby(['WHO_region', 'Date_reported']).aggregate({'New_cases': 'sum', 'Cumulative_cases': 'sum', 'New_deaths': 'sum', 'Cumulative_deaths': 'sum'})
@@ -121,7 +124,9 @@ def main():
     # Create a new dataframe for normalized data
     df_regions_norm = normalize(df_regions)
 
+    # print absolute data for region (in this case Europe)
     print(df_regions.loc['EURO'])
+    # print normalized data for region (in this case Europe)
     print(df_regions_norm.loc['EURO'])
 
 if(__name__ == '__main__'):
