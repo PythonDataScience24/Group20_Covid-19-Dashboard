@@ -74,9 +74,9 @@ def main():
     df.drop(columns=['alpha-2', 'alpha-3', 'Country Code'], inplace=True)
 
 
-    ########################
-    # Compute statistics
-    ########################
+    #############################
+    # Compute stats for countries
+    #############################
 
     # statistic 1: deaths per cases
     df['deaths_per_cases'] = df['Cumulative_deaths'] / df['Cumulative_cases']
@@ -94,17 +94,13 @@ def main():
     # TO DO: find out how missing values handled most reasonable
     df['Rt'] = 0
     df = df.groupby('Country').apply(calc_rt)
-
-
-    
+   
     # Creates a new dataframe with normalized values according to population size
     df_norm = normalize(df)
 
-    country = 'CH'
-    #print absolute data for specific country
-    print(df[df['Country_code'] == country])
-    #print normalized data for specific country
-    print(df_norm[df_norm['Country_code'] == country])
+    ##########################
+    # Compute stats for regions
+    ##########################
 
     # Create a separate dataframe for regions
     df_regions = df.groupby(['WHO_region', 'Date_reported']).aggregate({'New_cases': 'sum', 'Cumulative_cases': 'sum', 'New_deaths': 'sum', 'Cumulative_deaths': 'sum'})
@@ -123,6 +119,15 @@ def main():
 
     # Create a new dataframe for normalized data
     df_regions_norm = normalize(df_regions)
+
+
+
+
+    country = 'CH'
+    #print absolute data for specific country
+    print(df[df['Country_code'] == country])
+    #print normalized data for specific country
+    print(df_norm[df_norm['Country_code'] == country])
 
     # print absolute data for region (in this case Europe)
     print(df_regions.loc['EURO'])
