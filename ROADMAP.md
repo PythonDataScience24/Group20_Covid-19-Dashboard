@@ -2,10 +2,10 @@
 
 * Import data and data 
 * compute simple statistics for countries and regions like
-  * deaths per cases
-  * number of cases (absolute and normalized) 
-  * number of deaths (absolute and normalized) 
-  * the Rt number 
+  * deaths per cases (1)
+  * number of cases (absolute (2) and normalized (3)) 
+  * number of deaths (absolute (4) and normalized (5)) 
+  * the Rt number (6)
 
 ### Milestone 2 - Data selection - Deadline: May 16
 
