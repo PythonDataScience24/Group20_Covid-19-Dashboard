@@ -51,8 +51,13 @@ def calculate_rt(df):
     # https://medium.com/@m.pierini/time-varying-reproduction-number-rt-theory-and-python-implementation-part-i-basics-and-epiestim-99ea5fc30f51
     df['Rt'] = df['New_cases']/df['New_cases'].shift(1)
 
+    # Fill rt for new occurences of Covid with number of new cases on that day 
+    df.loc[df['Rt'] == np.inf, 'Rt'] = df['Rt'].shift(-1)
+    # df.loc[df['Rt'] == np.inf, 'Rt'] = df['New_cases'] # different approach
+
     # Fill rest with 0 for now
     df['Rt'].fillna(0, inplace=True)
+    
 
     return df
 
@@ -133,9 +138,9 @@ def main():
     print(df_norm[df_norm['Country_code'] == country])
 
     # print absolute data for region (in this case Europe)
-    print(df_regions.loc['EURO'])
+    print(df_regions.loc['EMRO'])
     # print normalized data for region (in this case Europe)
-    print(df_regions_norm.loc['EURO'])
+    print(df_regions_norm.loc['EMRO'])
 
 
 if(__name__ == '__main__'):
