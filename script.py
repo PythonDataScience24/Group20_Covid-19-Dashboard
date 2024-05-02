@@ -1,11 +1,13 @@
 import pandas as pd
 import numpy as np
 import seaborn as sns
+
 # constants
 data_path = './data/WHO-COVID-19-global-data.csv'
 region_data_path = './data/region.csv'
 population_data_path = './data/populations.csv'
 population_normalizer = 1000000
+
 
 def import_data():
     # import the covid 19 data from WHO-COVID-19-global-data.csv
@@ -22,6 +24,7 @@ def import_data():
 
     return df, regions, population
 
+
 def preprocess_data(df, regions, population):
     df['Date_reported'] = pd.to_datetime(df['Date_reported'])
     df = pd.merge(df, regions[['alpha-2', 'alpha-3']], left_on='Country_code', right_on='alpha-2')
@@ -34,23 +37,52 @@ def preprocess_data(df, regions, population):
     df.drop(columns=['alpha-2', 'alpha-3', 'Country Code'], inplace=True)
     return df
 
-def calc_rt(x):
+def calculate_rt(df):
     """
     Calculate Rt numbers for each country.
-
     Parameter: 
-        x: df containing Covid19 data
+        df: df containing Covid19 data
     Returns:
-        x: df with calculated rt number
+        df: df with calculated rt number
     """
     # use the approximation: Rt = n(t) / n(t-1), where n(t) is new infected at time t. the approximation is from:
     # https://medium.com/@m.pierini/time-varying-reproduction-number-rt-theory-and-python-implementation-part-i-basics-and-epiestim-99ea5fc30f51
-    x['Rt'] = x['New_cases']/x['New_cases'].shift(1)
+    df['Rt'] = df['New_cases']/df['New_cases'].shift(1)
 
     # Fill rest with 0 for now
-    x['Rt'].fillna(0, inplace=True)
+    df['Rt'].fillna(0, inplace=True)
 
-    return x
+    return df
+
+
+def calculate_deaths_per_cases(df):
+
+    df['deaths_per_cases'] = df['Cumulative_deaths'] / df['Cumulative_cases']
+    df['deaths_per_cases'].fillna(0, inplace=True)
+    return df
+
+
+def calculate_regional_statistics(df):
+    # Create a separate dataframe for regions
+    df_regions = df.groupby(['WHO_region', 'Date_reported']).aggregate(
+        {'New_cases': 'sum', 'Cumulative_cases': 'sum', 'New_deaths': 'sum', 'Cumulative_deaths': 'sum'})
+
+    # Compute deaths per cases
+    df_regions['deaths_per_cases'] = df_regions['Cumulative_deaths'] / df_regions['Cumulative_cases']
+
+    # Compute rt number
+    df_regions['Rt'] = 0
+    df_regions = df_regions.groupby('WHO_region').apply(calculate_rt)
+
+    # Add population for each region for normalization
+    pop = df.drop_duplicates(subset='Country', keep='first')
+    pop = pop.groupby('WHO_region')['population'].sum()
+    df_regions = df_regions.join(pop)
+
+    # Create a new dataframe for normalized data
+    df_regions_norm = normalize(df_regions)
+    return df_regions_norm
+
 
 def normalize(df):
     """
@@ -77,13 +109,10 @@ def main():
     # Preprocess data
     df = preprocess_data(df, regions, population)
 
-    #############################
     # Compute stats for countries
-    #############################
 
     # statistic 1: deaths per cases
-    df['deaths_per_cases'] = df['Cumulative_deaths'] / df['Cumulative_cases']
-    df['deaths_per_cases'].fillna(0, inplace=True)
+    df = calculate_deaths_per_cases(df)
 
     # statistic 2: number of cases is the column 'New_cases'
 
@@ -96,46 +125,26 @@ def main():
     # statistic 6: the Rt number
     # TO DO: find out how missing values handled most reasonable
     df['Rt'] = 0
-    df = df.groupby('Country').apply(calc_rt)
+    df = df.groupby('Country').apply(calculate_rt)
    
     # Creates a new dataframe with normalized values according to population size
     df_norm = normalize(df)
 
-    ##########################
     # Compute stats for regions
-    ##########################
-
-    # Create a separate dataframe for regions
-    df_regions = df.groupby(['WHO_region', 'Date_reported']).aggregate({'New_cases': 'sum', 'Cumulative_cases': 'sum', 'New_deaths': 'sum', 'Cumulative_deaths': 'sum'})
-
-    # Compute deaths per cases
-    df_regions['deaths_per_cases'] = df_regions['Cumulative_deaths'] / df_regions['Cumulative_cases']
-
-    # Compute rt number
-    df_regions['Rt'] = 0
-    df_regions = df_regions.groupby('WHO_region').apply(calc_rt)
-
-    # Add population for each region for normalization
-    pop = df.drop_duplicates(subset='Country', keep='first')
-    pop = pop.groupby('WHO_region')['population'].sum()
-    df_regions= df_regions.join(pop)
-
-    # Create a new dataframe for normalized data
-    df_regions_norm = normalize(df_regions)
-
-
+    df_regions_norm = calculate_regional_statistics(df)
 
 
     country = 'CH'
-    #print absolute data for specific country
+    # print absolute data for specific country
     print(df[df['Country_code'] == country])
-    #print normalized data for specific country
+    # print normalized data for specific country
     print(df_norm[df_norm['Country_code'] == country])
 
     # print absolute data for region (in this case Europe)
-    print(df_regions.loc['EURO'])
+    print(df_regions_norm.loc['EURO'])
     # print normalized data for region (in this case Europe)
     print(df_regions_norm.loc['EURO'])
+
 
 if(__name__ == '__main__'):
     main()
