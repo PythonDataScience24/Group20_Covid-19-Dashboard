@@ -1,10 +1,11 @@
 import pandas as pd
 import numpy as np
 import seaborn as sns
-
+# constants
 data_path = './data/WHO-COVID-19-global-data.csv'
 region_data_path = './data/region.csv'
-population_data_path = './data/population.csv'
+population_data_path = './data/populations.csv'
+population_normalizer = 1000000
 def calc_rt(x):
     """
     Calculate Rt numbers for each country.
@@ -19,7 +20,7 @@ def calc_rt(x):
     x['Rt'] = x['New_cases']/x['New_cases'].shift(1)
 
     # Fill rest with 0 for now
-    x['Rt'].fillna(0, inplace= True)
+    x['Rt'].fillna(0, inplace=True)
 
     return x
 
@@ -36,8 +37,7 @@ def normalize(df):
     df_norm = df.copy()
     cols_normalize = ['New_cases', 'Cumulative_cases', 'New_deaths', 'Cumulative_deaths']
 
-    df_norm[cols_normalize] = df_norm[cols_normalize].div(df_norm['population'], axis=0)
-    df_norm[cols_normalize] = np.multiply(df_norm[cols_normalize], 1000000)
+    df_norm[cols_normalize] = df_norm[cols_normalize].div(df_norm['population'], axis=0) * population_normalizer
 
     return df_norm
 
@@ -71,7 +71,7 @@ def main():
     ########################
 
     # Replace missing values by 0 
-    df.fillna(0, inplace = True)
+    df.fillna(0, inplace=True)
 
     # Drop unnecessary columns
     df.drop(columns=['alpha-2', 'alpha-3', 'Country Code'], inplace=True)
@@ -83,7 +83,7 @@ def main():
 
     # statistic 1: deaths per cases
     df['deaths_per_cases'] = df['Cumulative_deaths'] / df['Cumulative_cases']
-    df['deaths_per_cases'].fillna(0, inplace = True) # fix division by zero error
+    df['deaths_per_cases'].fillna(0, inplace=True)
 
     # statistic 2: number of cases is the column 'New_cases'
 
