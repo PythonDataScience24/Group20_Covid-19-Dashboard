@@ -6,6 +6,34 @@ data_path = './data/WHO-COVID-19-global-data.csv'
 region_data_path = './data/region.csv'
 population_data_path = './data/populations.csv'
 population_normalizer = 1000000
+
+def import_data():
+    # import the covid 19 data from WHO-COVID-19-global-data.csv
+    df = pd.read_csv(data_path)
+
+    # we need the 3-letter code to join with the population data
+    # get 3-letter country code from 'regions.csv', data from a previous exercise.
+    regions = pd.read_csv(region_data_path)
+
+    # get population per country from a manual CSV export from the world bank:
+    # https://databank.worldbank.org/source/population-estimates-and-projections#
+    # for simplicity, use a static population number: the average population between 2019 and 2021
+    population = pd.read_csv(population_data_path)
+
+    return df, regions, population
+
+def preprocess_data(df, regions, population):
+    df['Date_reported'] = pd.to_datetime(df['Date_reported'])
+    df = pd.merge(df, regions[['alpha-2', 'alpha-3']], left_on='Country_code', right_on='alpha-2')
+    population['population'] = np.divide(
+        (population['2019 [YR2019]'] + population['2020 [YR2020]'] + population['2021 [YR2021]']), 3.0)
+    df = pd.merge(df, population[['Country Code', 'population']], left_on='alpha-3', right_on='Country Code')
+    # Replace missing values by 0
+    df.fillna(0, inplace=True)
+    # Drop unnecessary columns
+    df.drop(columns=['alpha-2', 'alpha-3', 'Country Code'], inplace=True)
+    return df
+
 def calc_rt(x):
     """
     Calculate Rt numbers for each country.
@@ -42,40 +70,12 @@ def normalize(df):
     return df_norm
 
 
-def main(): 
-    ########################
+def main():
     # Import the data
-    ########################
+    df, regions, population = import_data()
 
-    df = pd.read_csv(data_path)
-
-    df['Date_reported'] = pd.to_datetime(df['Date_reported'])
-
-
-    # get 3-letter country code from 'regions.csv', data from a previous exercise.
-    # we need the 3-letter code to join with the population data
-    regions = pd.read_csv(region_data_path)
-    df = pd.merge(df, regions[['alpha-2', 'alpha-3']], left_on='Country_code', right_on='alpha-2')
-
-    # get population per country from a manual CSV export from the world bank:
-    # https://databank.worldbank.org/source/population-estimates-and-projections#
-    population = pd.read_csv(population_data_path)
-    # for simplicity, use a static population number: the average population between 2019 and 2021
-    population['population'] = np.divide((population['2019 [YR2019]'] + population['2020 [YR2020]'] + population['2021 [YR2021]']), 3.0)
-
-    df = pd.merge(df, population[['Country Code', 'population']], left_on='alpha-3', right_on='Country Code')
-
-
-    ########################
     # Preprocess data
-    ########################
-
-    # Replace missing values by 0 
-    df.fillna(0, inplace=True)
-
-    # Drop unnecessary columns
-    df.drop(columns=['alpha-2', 'alpha-3', 'Country Code'], inplace=True)
-
+    df = preprocess_data(df, regions, population)
 
     #############################
     # Compute stats for countries
