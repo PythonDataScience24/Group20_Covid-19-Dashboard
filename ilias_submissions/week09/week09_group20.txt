@@ -1,0 +1,11 @@
+GitHub; First deliverable (10 points)
+
+1) Become a member of the PythonDataScience24 GitHub organization
+    done
+2) Create a repository for your project on the PythonDataScience24 GitHub organization
+    done
+3) Code the first deliverable of your project
+    done
+        our repository: https://github.com/PythonDataScience24/Group20_Covid-19-Dashboard
+        we created a git tag for the code state for the first deliverable: "deliverable-1"
+            https://github.com/PythonDataScience24/Group20_Covid-19-Dashboard/releases/tag/deliverable-1
