@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import seaborn as sns
 
 # constants
 data_path = './data/WHO-COVID-19-global-data.csv'
