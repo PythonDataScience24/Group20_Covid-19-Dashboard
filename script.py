@@ -55,7 +55,7 @@ def calculate_rt(df):
     df.loc[df['Rt'] == np.inf, 'Rt'] = df['Rt'].shift(-1)
     # df.loc[df['Rt'] == np.inf, 'Rt'] = df['New_cases'] # different approach
 
-    # Fill rest with 0 for now
+    # Fill rest with 0 
     df['Rt'].fillna(0, inplace=True)
     
 
@@ -137,10 +137,11 @@ def main():
     # print normalized data for specific country
     print(df_norm[df_norm['Country_code'] == country])
 
+    region = 'EURO'
     # print absolute data for region (in this case Europe)
-    print(df_regions.loc['EMRO'])
+    print(df_regions.loc[region])
     # print normalized data for region (in this case Europe)
-    print(df_regions_norm.loc['EMRO'])
+    print(df_regions_norm.loc[region])
 
 
 if(__name__ == '__main__'):
