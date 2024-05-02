@@ -40,9 +40,11 @@ def preprocess_data(df, regions, population):
 def calculate_rt(df):
     """
     Calculate Rt numbers for each country.
+
     Parameter: 
-        df: df containing Covid19 data
-    Returns:
+        df (DataFrame): df containing Covid19 data
+
+    Returns (DataFrame):
         df: df with calculated rt number
     """
     # use the approximation: Rt = n(t) / n(t-1), where n(t) is new infected at time t. the approximation is from:
@@ -61,27 +63,31 @@ def calculate_deaths_per_cases(df):
     df['deaths_per_cases'].fillna(0, inplace=True)
     return df
 
+def calc_stats(df, for_whom):
+    """
+    Calculate stats related to COVID-19 cases and deaths.
 
-def calculate_regional_statistics(df):
-    # Create a separate dataframe for regions
-    df_regions = df.groupby(['WHO_region', 'Date_reported']).aggregate(
-        {'New_cases': 'sum', 'Cumulative_cases': 'sum', 'New_deaths': 'sum', 'Cumulative_deaths': 'sum'})
+    Parameters:
+        df (DataFrame): df containing COVID-19 data.
+        for_whom (str): column to group the data for calculation
 
-    # Compute deaths per cases
-    df_regions['deaths_per_cases'] = df_regions['Cumulative_deaths'] / df_regions['Cumulative_cases']
+    Returns:
+        df (DataFrame): original df with calculated stats
+        df_norm (DataFrame): df with normalized data for stats 3 and 5.
+    """
+    # Compute deaths per cases (stat 1)
+    df = calculate_deaths_per_cases(df)
 
-    # Compute rt number
-    df_regions['Rt'] = 0
-    df_regions = df_regions.groupby('WHO_region').apply(calculate_rt)
+    # number of cases (stat 2) is the column 'New_cases' and number of deaths (stat 4) is the column 'New_deaths'
 
-    # Add population for each region for normalization
-    pop = df.drop_duplicates(subset='Country', keep='first')
-    pop = pop.groupby('WHO_region')['population'].sum()
-    df_regions = df_regions.join(pop)
+    # Compute rt number (stat 6)
+    df['Rt'] = 0
+    df = df.groupby(for_whom).apply(calculate_rt)
 
-    # Create a new dataframe for normalized data
-    df_regions_norm = normalize(df_regions)
-    return df_regions, df_regions_norm
+
+    # Create a new dataframe for normalized data for stats 3 and 5
+    df_norm = normalize(df)
+    return df, df_norm
 
 
 def normalize(df):
@@ -90,9 +96,10 @@ def normalize(df):
     Important for statistics 3 and 5.
 
     Parameter:
-        df_norm: df containing Covid19 data
+        df (Dataframe): df containing Covid19 data
+        
     Returns:
-        df_norm: df with normalized Case numbers and deaths per 1000000
+        df_norm (Dataframe): df with normalized Case numbers and deaths per 1000000
     """
     df_norm = df.copy()
     cols_normalize = ['New_cases', 'Cumulative_cases', 'New_deaths', 'Cumulative_deaths']
@@ -110,28 +117,13 @@ def main():
     df = preprocess_data(df, regions, population)
 
     # Compute stats for countries
+    df, df_norm = calc_stats(df, 'Country')
 
-    # statistic 1: deaths per cases
-    df = calculate_deaths_per_cases(df)
+    # Compute stats for regions in separate dataframes
+    columns_to_sum = ['New_cases', 'Cumulative_cases', 'New_deaths', 'Cumulative_deaths', 'population']
 
-    # statistic 2: number of cases is the column 'New_cases'
-
-    # statistic 3: number of cases (normalized) calculated in separate df_norm
-
-    # statistic 4: number of deaths is the column 'New_deaths'
-
-    # statistic 5: number of deaths (normalized) calculated in separate df_norm
-
-    # statistic 6: the Rt number
-    # TO DO: find out how missing values handled most reasonable
-    df['Rt'] = 0
-    df = df.groupby('Country').apply(calculate_rt)
-   
-    # Creates a new dataframe with normalized values according to population size
-    df_norm = normalize(df)
-
-    # Compute stats for regions
-    df_regions, df_regions_norm = calculate_regional_statistics(df)
+    df_regions = df.groupby(['WHO_region', 'Date_reported'])[columns_to_sum].sum()
+    df_regions, df_regions_norm = calc_stats(df_regions, 'WHO_region')
 
 
     country = 'CH'
