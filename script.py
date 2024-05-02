@@ -44,8 +44,8 @@ def calculate_rt(df):
     Parameter: 
         df (DataFrame): df containing Covid19 data
 
-    Returns (DataFrame):
-        df: df with calculated rt number
+    Returns :
+        df (DataFrame): df with calculated rt number
     """
     # use the approximation: Rt = n(t) / n(t-1), where n(t) is new infected at time t. the approximation is from:
     # https://medium.com/@m.pierini/time-varying-reproduction-number-rt-theory-and-python-implementation-part-i-basics-and-epiestim-99ea5fc30f51
@@ -97,7 +97,7 @@ def normalize(df):
 
     Parameter:
         df (Dataframe): df containing Covid19 data
-        
+
     Returns:
         df_norm (Dataframe): df with normalized Case numbers and deaths per 1000000
     """
