@@ -81,7 +81,7 @@ def calculate_regional_statistics(df):
 
     # Create a new dataframe for normalized data
     df_regions_norm = normalize(df_regions)
-    return df_regions_norm
+    return df_regions, df_regions_norm
 
 
 def normalize(df):
@@ -131,7 +131,7 @@ def main():
     df_norm = normalize(df)
 
     # Compute stats for regions
-    df_regions_norm = calculate_regional_statistics(df)
+    df_regions, df_regions_norm = calculate_regional_statistics(df)
 
 
     country = 'CH'
@@ -141,7 +141,7 @@ def main():
     print(df_norm[df_norm['Country_code'] == country])
 
     # print absolute data for region (in this case Europe)
-    print(df_regions_norm.loc['EURO'])
+    print(df_regions.loc['EURO'])
     # print normalized data for region (in this case Europe)
     print(df_regions_norm.loc['EURO'])
 
