@@ -6,6 +6,7 @@
   * number of cases (absolute (2) and normalized (3)) 
   * number of deaths (absolute (4) and normalized (5)) 
   * the Rt number (6)
+* 2.5.2024: done, code state in git tag `deliverable-1`
 
 ### Milestone 2 - Data selection - Deadline: May 16
 
