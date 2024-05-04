@@ -53,8 +53,8 @@ def calculate_rt(df):
     # Fill rt for new occurences with number rt number of next day (possible changing approach later) 
     df.loc[df['Rt'] == np.inf, 'Rt'] = df['Rt'].shift(-1) # different approach df['New_cases'] to be determined later
     
-    if(df.loc[df.index[0], 'New_cases'] != 0):
-        df.loc[df.index[0], 'Rt'] = df['Rt'].iloc[1]
+    if(df['New_cases'].iloc[0] != 0):
+        df['Rt'].iloc[0] = df['Rt'].iloc[1]
 
 
     # Fill rest with 0 
