@@ -51,9 +51,12 @@ def calculate_rt(df):
     # https://medium.com/@m.pierini/time-varying-reproduction-number-rt-theory-and-python-implementation-part-i-basics-and-epiestim-99ea5fc30f51
     df['Rt'] = df['New_cases']/df['New_cases'].shift(1)
 
-    # Fill rt for new occurences of Covid with number of new cases on that day 
-    df.loc[df['Rt'] == np.inf, 'Rt'] = df['Rt'].shift(-1)
-    # df.loc[df['Rt'] == np.inf, 'Rt'] = df['New_cases'] # different approach
+    # Fill rt for new occurences with number rt number of next day (possible changing approach later) 
+    df.loc[df['Rt'] == np.inf, 'Rt'] = df['Rt'].shift(-1) # different approach df['New_cases'] to be determined later
+    
+    if(df.loc[df.index[0], 'New_cases'] != 0):
+        df.loc[df.index[0], 'Rt'] = df['Rt'].iloc[1]
+
 
     # Fill rest with 0 
     df['Rt'].fillna(0, inplace=True)
