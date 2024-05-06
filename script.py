@@ -1,7 +1,15 @@
 import pandas as pd
 import numpy as np
+import dash
+from dash import dcc, html
+from dash.dependencies import Input, Output
+import plotly.graph_objs as go
 
-# constants
+# Define global variables
+df = None
+app = dash.Dash(__name__)
+
+# Constants
 data_path = './data/WHO-COVID-19-global-data.csv'
 region_data_path = './data/region.csv'
 population_data_path = './data/populations.csv'
@@ -9,16 +17,16 @@ population_normalizer = 1000000
 
 
 def import_data():
-    # import the covid 19 data from WHO-COVID-19-global-data.csv
+    # Import the covid 19 data from WHO-COVID-19-global-data.csv
     df = pd.read_csv(data_path)
 
-    # we need the 3-letter code to join with the population data
-    # get 3-letter country code from 'regions.csv', data from a previous exercise.
+    # We need the 3-letter code to join with the population data
+    # Get 3-letter country code from 'regions.csv', data from a previous exercise.
     regions = pd.read_csv(region_data_path)
 
-    # get population per country from a manual CSV export from the world bank:
+    # Get population per country from a manual CSV export from the World Bank:
     # https://databank.worldbank.org/source/population-estimates-and-projections#
-    # for simplicity, use a static population number: the average population between 2019 and 2021
+    # For simplicity, use a static population number: the average population between 2019 and 2021
     population = pd.read_csv(population_data_path)
 
     return df, regions, population
@@ -36,39 +44,38 @@ def preprocess_data(df, regions, population):
     df.drop(columns=['alpha-2', 'alpha-3', 'Country Code'], inplace=True)
     return df
 
+
 def calculate_rt(df):
     """
     Calculate Rt numbers for each country.
 
-    Parameter: 
+    Parameter:
         df (DataFrame): df containing Covid19 data
 
     Returns :
         df (DataFrame): df with calculated rt number
     """
-    # use the approximation: Rt = n(t) / n(t-1), where n(t) is new infected at time t. the approximation is from:
+    # Use the approximation: Rt = n(t) / n(t-1), where n(t) is new infected at time t. The approximation is from:
     # https://medium.com/@m.pierini/time-varying-reproduction-number-rt-theory-and-python-implementation-part-i-basics-and-epiestim-99ea5fc30f51
-    df['Rt'] = df['New_cases']/df['New_cases'].shift(1)
+    df['Rt'] = df['New_cases'] / df['New_cases'].shift(1)
 
-    # Fill rt for new occurences with number rt number of next day (possible changing approach later) 
-    df.loc[df['Rt'] == np.inf, 'Rt'] = df['Rt'].shift(-1) # different approach df['New_cases'] to be determined later
-    
-    if(df['New_cases'].iloc[0] != 0):
+    # Fill rt for new occurrences with number rt number of next day (possible changing approach later)
+    df.loc[df['Rt'] == np.inf, 'Rt'] = df['Rt'].shift(-1)  # different approach df['New_cases'] to be determined later
+
+    if df['New_cases'].iloc[0] != 0:
         df['Rt'].iloc[0] = df['Rt'].iloc[1]
 
-
-    # Fill rest with 0 
+    # Fill rest with 0
     df['Rt'].fillna(0, inplace=True)
-    
 
     return df
 
 
 def calculate_deaths_per_cases(df):
-
     df['deaths_per_cases'] = df['Cumulative_deaths'] / df['Cumulative_cases']
     df['deaths_per_cases'].fillna(0, inplace=True)
     return df
+
 
 def calc_stats(df, for_whom):
     """
@@ -85,12 +92,11 @@ def calc_stats(df, for_whom):
     # Compute deaths per cases (stat 1)
     df = calculate_deaths_per_cases(df)
 
-    # number of cases (stat 2) is the column 'New_cases' and number of deaths (stat 4) is the column 'New_deaths'
+    # Number of cases (stat 2) is the column 'New_cases' and number of deaths (stat 4) is the column 'New_deaths'
 
     # Compute rt number (stat 6)
     df['Rt'] = 0
     df = df.groupby(for_whom).apply(calculate_rt)
-
 
     # Create a new dataframe for normalized data for stats 3 and 5
     df_norm = normalize(df)
@@ -117,6 +123,7 @@ def normalize(df):
 
 
 def main():
+    global df  # Define df as global variable
     # Import the data
     df, regions, population = import_data()
 
@@ -132,19 +139,45 @@ def main():
     df_regions = df.groupby(['WHO_region', 'Date_reported'])[columns_to_sum].sum()
     df_regions, df_regions_norm = calc_stats(df_regions, 'WHO_region')
 
+    # Initialize Dash app
+    app.layout = html.Div([
+        dcc.Graph(id='covid-stats-graph'),
 
-    country = 'CH'
-    # print absolute data for specific country
-    print(df[df['Country_code'] == country])
-    # print normalized data for specific country
-    print(df_norm[df_norm['Country_code'] == country])
-
-    region = 'EURO'
-    # print absolute data for region (in this case Europe)
-    print(df_regions.loc[region])
-    # print normalized data for region (in this case Europe)
-    print(df_regions_norm.loc[region])
+        html.Label('Select Country'),
+        dcc.Dropdown(
+            id='country-dropdown',
+            options=[{'label': country, 'value': country} for country in df['Country'].unique()],
+            value='Switzerland'  # Default value
+        )
+    ])
 
 
-if(__name__ == '__main__'):
+    @app.callback(
+        Output('covid-stats-graph', 'figure'),
+        [Input('country-dropdown', 'value')]
+    )
+    def update_graph(selected_country):
+        # Filter data for the selected country
+        selected_country_data = df[df['Country'] == selected_country]
+
+        # Create traces for New Cases and New Deaths
+        trace1 = go.Scatter(x=selected_country_data['Date_reported'], y=selected_country_data['New_cases'],
+                            mode='lines', name='New Cases', line=dict(color='blue'))
+        trace2 = go.Scatter(x=selected_country_data['Date_reported'], y=selected_country_data['New_deaths'],
+                            mode='lines', name='New Deaths', line=dict(color='red'))
+
+        # Create layout
+        layout = go.Layout(title=f"COVID-19 Statistics for {selected_country}",
+                           xaxis=dict(title='Date Reported'), yaxis=dict(title='Count'))
+
+        # Return figure
+        return {'data': [trace1, trace2], 'layout': layout}
+
+
+    # Run the app
+    app.run_server(debug=True)
+
+
+# Call main function
+if __name__ == '__main__':
     main()
