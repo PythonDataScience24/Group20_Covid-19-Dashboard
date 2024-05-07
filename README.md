@@ -6,6 +6,8 @@ Run the script `script.py` with python 3, without any args. Make sure that
 the modules listed in `requirements.txt` are installed in the python 
 environment.
 
+The application is a web app, and is viewable in the browser on http://127.0.0.1:8050/
+
 ## What the program currently does
 
 The data is imported and simple statistics are calculated.

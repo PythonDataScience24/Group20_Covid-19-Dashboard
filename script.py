@@ -96,7 +96,7 @@ def calc_stats(df, for_whom):
 
     # Compute rt number (stat 6)
     df['Rt'] = 0
-    df = df.groupby(for_whom).apply(calculate_rt)
+    df = df.groupby(for_whom, group_keys=True).apply(calculate_rt)
 
     # Create a new dataframe for normalized data for stats 3 and 5
     df_norm = normalize(df)
@@ -147,7 +147,8 @@ def main():
         dcc.Dropdown(
             id='country-dropdown',
             options=[{'label': country, 'value': country} for country in df['Country'].unique()],
-            value='Switzerland'  # Default value
+            value=['Switzerland'],  # Default value
+            multi=True
         )
     ])
 
@@ -156,22 +157,23 @@ def main():
         Output('covid-stats-graph', 'figure'),
         [Input('country-dropdown', 'value')]
     )
-    def update_graph(selected_country):
-        # Filter data for the selected country
-        selected_country_data = df[df['Country'] == selected_country]
-
-        # Create traces for New Cases and New Deaths
-        trace1 = go.Scatter(x=selected_country_data['Date_reported'], y=selected_country_data['New_cases'],
-                            mode='lines', name='New Cases', line=dict(color='blue'))
-        trace2 = go.Scatter(x=selected_country_data['Date_reported'], y=selected_country_data['New_deaths'],
-                            mode='lines', name='New Deaths', line=dict(color='red'))
-
-        # Create layout
-        layout = go.Layout(title=f"COVID-19 Statistics for {selected_country}",
+    def update_graph(selected_countries):
+        data = dict()
+        columns_to_display = ['New_cases', 'New_deaths']
+        for column in columns_to_display:
+            data[column] = list()
+            for country in selected_countries:
+                selected_country_data = df[df['Country'] == country]
+                data[column].append(
+                    go.Scatter(x=selected_country_data['Date_reported'], y=selected_country_data[column],
+                               mode='lines', name=column.replace('_', '') + ' ' + country))
+        layout = go.Layout(title=f"COVID-19 Statistics for {', '.join(selected_countries)}",
                            xaxis=dict(title='Date Reported'), yaxis=dict(title='Count'))
-
-        # Return figure
-        return {'data': [trace1, trace2], 'layout': layout}
+        plot_data = list()
+        for column in columns_to_display:
+            for scatter in data[column]:
+                plot_data.append(scatter)
+        return {'data': plot_data, 'layout': layout}
 
 
     # Run the app
