@@ -138,13 +138,12 @@ def generate_line_plot(df, selected_countries, data_col):
         - fig (plotly.graph_objects.Figure): line graph showing development of value in specified column
         """
 
-        # Creates a figure
         fig = go.Figure()
-        # Changes the name for the graph title and axis title
+        # Sets name for graph title and axis title
         name_of_graph = data_col.replace('_', ' ').replace('New ', '').capitalize()
         
 
-        # Adds for every selected country a line graph over the given time period
+        # Adds for every selected country a line
         for country in selected_countries:
             selected_country_data  = df[df['level_0'] == country]
             fig.add_trace(go.Scatter(x=selected_country_data['Date_reported'], y=selected_country_data[data_col], mode='lines', name=country))
@@ -155,7 +154,7 @@ def generate_line_plot(df, selected_countries, data_col):
 
 def append_dataframes(df, df_regions):
     """
-    Appends two dataframes containing data for country and regions together by reindexing the columns of the first dataframe.
+    Appends two dataframes containing Covid data for countries and regions.
 
         Parameters:
         - df (dataframe) : dataframe containing Covid data for the countries
@@ -164,7 +163,7 @@ def append_dataframes(df, df_regions):
         Returns:
         - df (dataframe) : dataframe containing Covid data for the countries and regions
     """
-    # Appending the two dataframes together
+    # Appends the two dataframes together
     df = df.set_index(['Country', 'Date_reported'])
     df_regions = df_regions.reset_index(level=[1])
     df = df._append(df_regions)
@@ -190,7 +189,7 @@ def main():
     df_regions = df.groupby(['WHO_region', 'Date_reported'])[columns_to_sum].sum()
     df_regions, df_regions_norm = calc_stats(df_regions, 'WHO_region')
 
-    # Append dataframes together
+    # Append dataframes for countries and regions
     df = append_dataframes(df, df_regions)
 
 
