@@ -124,80 +124,7 @@ def normalize(df):
 
     return df_norm
 
-
-def main():
-    global df  # Define df as global variable
-    # Import the data
-    df, regions, population = import_data()
-
-    # Preprocess data
-    df = preprocess_data(df, regions, population)
-
-    # Compute stats for countries
-    df, df_norm = calc_stats(df, 'Country')
-
-    # Compute stats for regions in separate dataframes
-    columns_to_sum = ['New_cases', 'Cumulative_cases', 'New_deaths', 'Cumulative_deaths', 'population']
-
-    df_regions = df.groupby(['WHO_region', 'Date_reported'])[columns_to_sum].sum()
-    df_regions, df_regions_norm = calc_stats(df_regions, 'WHO_region')
-
-    # Initialize Dash app
-    app.layout = html.Div([
-        html.H1('Covid-19'),
-        html.Div(
-        [   html.Label('Select Country'),
-            dcc.Dropdown(
-            id='country-dropdown',
-            options=[{'label': country, 'value': country} for country in df['Country'].unique()],
-            value=['Switzerland'],  # Default value
-            multi=True
-        ),
-            # dcc.RangeSlider(
-            #     id='date-range-slider',
-            #     min=df['Date_reported'].min().timestamp(),
-            #     max=df['Date_reported'].max().timestamp(),
-            #     value=[df['Date_reported'].min().timestamp(), df['Date_reported'].max().timestamp()],
-                
-            # )
-            html.Label('Select timeframe: '),
-            dcc.DatePickerRange(
-                id='date-picker',
-                start_date=df['Date_reported'].min(),
-                end_date=df['Date_reported'].max(),
-                display_format='MM/YYYY',)
-                
-
-        ], id='control-container', style={'display': 'flex', 'flex-direction': 'row'}),
-        
-        html.Div([
-            # 
-            dcc.Graph(id='cases-graph'),
-            dcc.Graph(id='deaths-graph'),
-        ], style={'display': 'flex', 'flex-direction': 'row'}),
-    ])
-
-
-    @app.callback(
-        [Output('cases-graph', 'figure'),
-         Output('deaths-graph', 'figure')],
-        [Input('country-dropdown', 'value'),
-         Input('date-picker', 'start_date'),
-         Input('date-picker', 'end_date')]
-    )
-    def update_graphs(selected_countries, start_date, end_date):
-        # filter so only within given time range cases and deaths computed 
-        df_filtered = df[(df['Date_reported'] >= start_date) & (df['Date_reported'] <= end_date)]
-
-        # graph which shows how the number of cases developed
-        fig_cases = generate_line_plot(df_filtered, selected_countries, "New_cases")
-
-        # graph which shows how the number of deaths developed
-        fig_deaths = generate_line_plot(df_filtered, selected_countries, "New_deaths")
-
-        return fig_cases, fig_deaths
-    
-    def generate_line_plot(df, selected_countries, data_col):
+def generate_line_plot(df, selected_countries, data_col):
         """
         Creates a line graph illustrating the development of a specified data column 
         (e.g. Cases, Deaths) over a period of time.
@@ -219,17 +146,103 @@ def main():
 
         # Adds for every selected country a line graph over the given time period
         for country in selected_countries:
-            selected_country_data  = df[df['Country'] == country]
+            selected_country_data  = df[df['level_0'] == country]
             fig.add_trace(go.Scatter(x=selected_country_data['Date_reported'], y=selected_country_data[data_col], mode='lines', name=country))
 
         # Sets the title and the axis titles of the graph
         fig.update_layout(title=f'{name_of_graph} by Country', yaxis_title=f'# of {name_of_graph}')
         return fig
 
+def append_dataframes(df, df_regions):
+    """
+    Appends two dataframes containing data for country and regions together by reindexing the columns of the first dataframe.
 
+        Parameters:
+        - df (dataframe) : dataframe containing Covid data for the countries
+        - df_regions (dataframe) : dataframe containing Covid data for the regions
+
+        Returns:
+        - df (dataframe) : dataframe containing Covid data for the countries and regions
+    """
+    # Appending the two dataframes together
+    df = df.set_index(['Country', 'Date_reported'])
+    df_regions = df_regions.reset_index(level=[1])
+    df = df._append(df_regions)
+
+    # Flattens the dataframe
+    df = df.reset_index()
+    return df
+
+def main():
+    global df  # Define df as global variable
+    # Import the data
+    df, regions, population = import_data()
+
+    # Preprocess data
+    df = preprocess_data(df, regions, population)
+
+    # Compute stats for countries
+    df, df_norm = calc_stats(df, 'Country')
+
+    # Compute stats for regions in separate dataframes
+    columns_to_sum = ['New_cases', 'Cumulative_cases', 'New_deaths', 'Cumulative_deaths', 'population']
+
+    df_regions = df.groupby(['WHO_region', 'Date_reported'])[columns_to_sum].sum()
+    df_regions, df_regions_norm = calc_stats(df_regions, 'WHO_region')
+
+    # Append dataframes together
+    df = append_dataframes(df, df_regions)
+
+
+    # Initialize Dash app
+    app.layout = html.Div([
+        html.H1('Covid-19'),
+        html.Div(
+        [   html.Label('Select Country'),
+            dcc.Dropdown(
+            id='country-dropdown',
+            options=[{'label': country, 'value': country} for country in df['level_0'].unique()],
+            value=['Switzerland'],  # Default value
+            multi=True
+        ),
+            html.Label('Select timeframe: '),
+            dcc.DatePickerRange(
+                id='date-picker',
+                start_date=df['Date_reported'].min(),
+                end_date=df['Date_reported'].max(),
+                display_format='MM/YYYY',)
+                
+
+        ], id='control-container', style={'display': 'flex', 'flex-direction': 'row'}),
+        
+        html.Div([
+            dcc.Graph(id='cases-graph'),
+            dcc.Graph(id='deaths-graph'),
+        ], style={'display': 'flex', 'flex-direction': 'row'}),
+    ])
+
+
+    @app.callback(
+        [Output('cases-graph', 'figure'),
+         Output('deaths-graph', 'figure')],
+        [Input('country-dropdown', 'value'),
+         Input('date-picker', 'start_date'),
+         Input('date-picker', 'end_date')]
+    )
+    def update_graphs(selected_countries, start_date, end_date):
+        # filter so only within given time range cases and deaths computed 
+        df_filtered = df[(df['Date_reported'] >= start_date) & (df['Date_reported'] <= end_date)]
+
+        # graph showing number of cases over selected period of time
+        fig_cases = generate_line_plot(df_filtered, selected_countries, "New_cases")
+
+        # graph showing number of deaths over selected period of time
+        fig_deaths = generate_line_plot(df_filtered, selected_countries, "New_deaths")
+
+        return fig_cases, fig_deaths
 
     # Run the app
-    app.run_server(debug=True, port= 3000)
+    app.run_server(debug=True)
 
 
 # Call main function
