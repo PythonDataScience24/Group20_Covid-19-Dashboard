@@ -4,6 +4,7 @@ import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output
 import plotly.graph_objs as go
+import plotly.express as px
 
 # Define global variables
 df = None
@@ -39,9 +40,11 @@ def preprocess_data(df, regions, population):
         (population['2019 [YR2019]'] + population['2020 [YR2020]'] + population['2021 [YR2021]']), 3.0)
     df = pd.merge(df, population[['Country Code', 'population']], left_on='alpha-3', right_on='Country Code')
     # Replace missing values by 0
-    df.fillna(0, inplace=True)
+    df = df.fillna(0)
     # Drop unnecessary columns
-    df.drop(columns=['alpha-2', 'alpha-3', 'Country Code'], inplace=True)
+    df = df.drop(columns=['alpha-2', 'alpha-3', 'Country Code'])
+    
+
     return df
 
 
@@ -66,14 +69,14 @@ def calculate_rt(df):
         df['Rt'].iloc[0] = df['Rt'].iloc[1]
 
     # Fill rest with 0
-    df['Rt'].fillna(0, inplace=True)
+    df['Rt'] = df['Rt'].fillna(0)
 
     return df
 
 
 def calculate_deaths_per_cases(df):
     df['deaths_per_cases'] = df['Cumulative_deaths'] / df['Cumulative_cases']
-    df['deaths_per_cases'].fillna(0, inplace=True)
+    df['deaths_per_cases'] = df['deaths_per_cases'].fillna(0)
     return df
 
 
@@ -141,43 +144,61 @@ def main():
 
     # Initialize Dash app
     app.layout = html.Div([
-        dcc.Graph(id='covid-stats-graph'),
-
+        html.H1('Covid-19'),
         html.Label('Select Country'),
         dcc.Dropdown(
             id='country-dropdown',
             options=[{'label': country, 'value': country} for country in df['Country'].unique()],
             value=['Switzerland'],  # Default value
             multi=True
-        )
+        ),
+        html.Div([
+            dcc.Graph(id='covid-stats-graph'),
+            dcc.Graph(id='deaths-graph'),
+        ], style={'display': 'flex', 'flex-direction': 'row'}),
     ])
 
 
     @app.callback(
-        Output('covid-stats-graph', 'figure'),
+        [Output('covid-stats-graph', 'figure'),
+         Output('deaths-graph', 'figure')],
         [Input('country-dropdown', 'value')]
     )
-    def update_graph(selected_countries):
-        data = dict()
-        columns_to_display = ['New_cases', 'New_deaths']
-        for column in columns_to_display:
-            data[column] = list()
-            for country in selected_countries:
-                selected_country_data = df[df['Country'] == country]
-                data[column].append(
-                    go.Scatter(x=selected_country_data['Date_reported'], y=selected_country_data[column],
-                               mode='lines', name=column.replace('_', '') + ' ' + country))
-        layout = go.Layout(title=f"COVID-19 Statistics for {', '.join(selected_countries)}",
-                           xaxis=dict(title='Date Reported'), yaxis=dict(title='Count'))
-        plot_data = list()
-        for column in columns_to_display:
-            for scatter in data[column]:
-                plot_data.append(scatter)
-        return {'data': plot_data, 'layout': layout}
+    def update_graphs(selected_countries):
+        # graph which shows how the number of cases developed
+        fig_cases = generate_line_plot(selected_countries, "New_cases")
+
+        # graph which shows how the number of deaths developed
+        fig_deaths = generate_line_plot(selected_countries, "New_deaths")
+
+        return fig_cases, fig_deaths
+    
+    def generate_line_plot(selected_countries, data_col):
+        """
+        Creates a line graph illustrating the development of a specified data column 
+        (e.g. Cases, Deaths) over a period of time.
+
+        Parameters:
+        - selected_countries (list): list of countries for which the user selected
+        - data_col (str): name of the column for which values the line graph will be plotted
+
+        Returns:
+        - fig (plotly.graph_objects.Figure): line graph showing development of value in specified column
+        """
+        name_of_graph = data_col.replace('_', ' ').replace('New ', '').capitalize()
+        fig = go.Figure()
+
+        for country in selected_countries:
+            selected_country_data  = df[df['Country'] == country]
+            fig.add_trace(go.Scatter(x=selected_country_data['Date_reported'], y=selected_country_data[data_col], mode='lines', name=country))
+
+        fig.update_layout(title=f'{name_of_graph} by Country', xaxis_title='Date Reported', yaxis_title=f'# of {name_of_graph}')
+        return fig
+
 
 
     # Run the app
-    app.run_server(debug=True)
+    app.run_server(debug=True, port= 3000)
 
 
 # Call main function
