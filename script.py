@@ -233,10 +233,10 @@ def main():
         # filter so only within given time range cases and deaths computed 
         df_filtered = df[(df['Date_reported'] >= start_date) & (df['Date_reported'] <= end_date)]
 
-        # graph showing number of cases over selected period of time
+        # graph showing number of cases over selected time period
         fig_cases = generate_line_plot(df_filtered, selected_countries, "New_cases")
 
-        # graph showing number of deaths over selected period of time
+        # graph showing number of deaths over selected time period
         fig_deaths = generate_line_plot(df_filtered, selected_countries, "New_deaths")
 
         return fig_cases, fig_deaths
