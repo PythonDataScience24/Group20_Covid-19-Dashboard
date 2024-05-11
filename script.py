@@ -145,54 +145,85 @@ def main():
     # Initialize Dash app
     app.layout = html.Div([
         html.H1('Covid-19'),
-        html.Label('Select Country'),
-        dcc.Dropdown(
+        html.Div(
+        [   html.Label('Select Country'),
+            dcc.Dropdown(
             id='country-dropdown',
             options=[{'label': country, 'value': country} for country in df['Country'].unique()],
             value=['Switzerland'],  # Default value
             multi=True
         ),
+            # dcc.RangeSlider(
+            #     id='date-range-slider',
+            #     min=df['Date_reported'].min().timestamp(),
+            #     max=df['Date_reported'].max().timestamp(),
+            #     value=[df['Date_reported'].min().timestamp(), df['Date_reported'].max().timestamp()],
+                
+            # )
+            html.Label('Select timeframe: '),
+            dcc.DatePickerRange(
+                id='date-picker',
+                start_date=df['Date_reported'].min(),
+                end_date=df['Date_reported'].max(),
+                display_format='MM/YYYY',)
+                
+
+        ], id='control-container', style={'display': 'flex', 'flex-direction': 'row'}),
+        
         html.Div([
-            dcc.Graph(id='covid-stats-graph'),
+            # 
+            dcc.Graph(id='cases-graph'),
             dcc.Graph(id='deaths-graph'),
         ], style={'display': 'flex', 'flex-direction': 'row'}),
     ])
 
 
     @app.callback(
-        [Output('covid-stats-graph', 'figure'),
+        [Output('cases-graph', 'figure'),
          Output('deaths-graph', 'figure')],
-        [Input('country-dropdown', 'value')]
+        [Input('country-dropdown', 'value'),
+         Input('date-picker', 'start_date'),
+         Input('date-picker', 'end_date')]
     )
-    def update_graphs(selected_countries):
+    def update_graphs(selected_countries, start_date, end_date):
+        # filter so only within given time range cases and deaths computed 
+        df_filtered = df[(df['Date_reported'] >= start_date) & (df['Date_reported'] <= end_date)]
+
         # graph which shows how the number of cases developed
-        fig_cases = generate_line_plot(selected_countries, "New_cases")
+        fig_cases = generate_line_plot(df_filtered, selected_countries, "New_cases")
 
         # graph which shows how the number of deaths developed
-        fig_deaths = generate_line_plot(selected_countries, "New_deaths")
+        fig_deaths = generate_line_plot(df_filtered, selected_countries, "New_deaths")
 
         return fig_cases, fig_deaths
     
-    def generate_line_plot(selected_countries, data_col):
+    def generate_line_plot(df, selected_countries, data_col):
         """
         Creates a line graph illustrating the development of a specified data column 
         (e.g. Cases, Deaths) over a period of time.
 
         Parameters:
+        - df (dataframe) : dataframe containing values within date range
         - selected_countries (list): list of countries for which the user selected
         - data_col (str): name of the column for which values the line graph will be plotted
 
         Returns:
         - fig (plotly.graph_objects.Figure): line graph showing development of value in specified column
         """
-        name_of_graph = data_col.replace('_', ' ').replace('New ', '').capitalize()
-        fig = go.Figure()
 
+        # Creates a figure
+        fig = go.Figure()
+        # Changes the name for the graph title and axis title
+        name_of_graph = data_col.replace('_', ' ').replace('New ', '').capitalize()
+        
+
+        # Adds for every selected country a line graph over the given time period
         for country in selected_countries:
             selected_country_data  = df[df['Country'] == country]
             fig.add_trace(go.Scatter(x=selected_country_data['Date_reported'], y=selected_country_data[data_col], mode='lines', name=country))
 
-        fig.update_layout(title=f'{name_of_graph} by Country', xaxis_title='Date Reported', yaxis_title=f'# of {name_of_graph}')
+        # Sets the title and the axis titles of the graph
+        fig.update_layout(title=f'{name_of_graph} by Country', yaxis_title=f'# of {name_of_graph}')
         return fig
 
 
