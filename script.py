@@ -147,7 +147,8 @@ def main():
         dcc.Dropdown(
             id='country-dropdown',
             options=[{'label': country, 'value': country} for country in df['Country'].unique()],
-            value='Switzerland'  # Default value
+            value='Switzerland',  # Default value
+            multi=True
         )
     ])
 
@@ -158,12 +159,15 @@ def main():
     )
     def update_graph(selected_country):
         # Filter data for the selected country
-        selected_country_data = df[df['Country'] == selected_country]
+        selected_country_data = df[df['Country'].isin(selected_country)]
 
         # Create traces for New Cases and New Deaths
-        trace1 = go.Scatter(x=selected_country_data['Date_reported'], y=selected_country_data['New_cases'],
+        traces=[]
+        for country in selected_country:
+            country_data = selected_country_data[selected_country_data['Country']==country]
+            traces.append(go.Scatter(x=country_data['Date_reported'], y=country_data['New_cases'],
                             mode='lines', name='New Cases', line=dict(color='blue'))
-        trace2 = go.Scatter(x=selected_country_data['Date_reported'], y=selected_country_data['New_deaths'],
+            traces.append(go.Scatter(x=selected_country_data['Date_reported'], y=selected_country_data['New_deaths'],
                             mode='lines', name='New Deaths', line=dict(color='red'))
 
         # Create layout
