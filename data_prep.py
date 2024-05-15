@@ -19,18 +19,11 @@ class DataProcessor:
       and append dataframes.
       """
     def __init__(self):
+        self.df_countries = None
+        self.df_regions = None
+
         self.import_data()
         self.preprocess_data()
-
-        # Create absolute and normalized for countries and regions
-        df_countries, df_countries_norm = self.calc_stats(self.df_countries, 'Country')
-
-        df_regions = self.create_regional_df()
-        df_regions, df_regions_norm = self.calc_stats(df_regions, 'WHO_region')
-
-        # Create new dataframes by appending the data for countries
-        self.df_absolute = self.append_dataframes(df_countries, df_regions)
-        self.df_normalized = self.append_dataframes(df_countries_norm, df_regions_norm) 
 
     def import_data(self):
         """
@@ -131,9 +124,9 @@ class DataProcessor:
 
         return df_norm
 
-    def create_regional_df(self):
+    def compute_regional_df(self):
         """
-        Creates a dataframe COVID-19 by WHO region.
+        Compute a COVID-19 dataframe by WHO region.
         """
         columns_to_sum = ['New_cases', 'Cumulative_cases',
                         'New_deaths', 'Cumulative_deaths',
@@ -156,36 +149,41 @@ class DataProcessor:
         df_covid = df_covid.reset_index()
         df_covid = df_covid.rename(columns={df_covid.columns[0]: 'Country_region'},)
         return df_covid
+    def get_country_df(self):
+        """
+        Returns the Covid data by countries.
+        """
+        return self.df_countries
 
-    def save_absolute_as_csv(self, absolute_file_path):
+    def get_regional_df(self):
         """
-        Saves the dataframe conatining absolute COVID-data as a CSV file under
-        the given filepath.
+        Returns the Covid data by regions.
         """
-        self.df_absolute.to_csv(absolute_file_path, index=False)
-
-
-    def save_normalized_as_csv(self, normalized_file_path):
-        """
-        Saves the dataframe conatining normalized COVID-data as a CSV file under
-        the given filepath.
-        """
-        self.df_normalized.to_csv(normalized_file_path, index=False)
+        if self.df_regions is None:
+            # Compute the dataframe if it hasn't been computed yet
+            self.df_regions = self.compute_regional_df()
+        return self.df_regions
 
 def main():
     """
     Creates dataframes for absoulute and normalized COVID-data
-    and saves them in the folder processed_data.
+    and save them in the folder processed_data.
     """
-    # Create dataframes for absolute and normalized COVID-data
     data = DataProcessor()
+    # Compute dataframes for countries and regions
+    df_countries = data.get_country_df()
+    df_countries, df_countries_norm = data.calc_stats(df_countries, 'Country')
 
-    # Saves the absolute and normalized data as CSV
-    absolute_file_path = 'processed_data/df_absolute.csv'
-    normalized_file_path =  'processed_data/df_normalized.csv'
+    df_regions = data.get_regional_df()
+    df_regions, df_regions_norm = data.calc_stats(df_regions, 'WHO_region')
 
-    data.save_absolute_as_csv(absolute_file_path)
-    data.save_normalized_as_csv(normalized_file_path)
+    # Append dataframes countries and regions together
+    df_absolute = data.append_dataframes(df_countries, df_regions)
+    df_normalized = data.append_dataframes(df_countries_norm, df_regions_norm)
+
+    # Save data to CSV
+    df_absolute.to_csv('processed_data/df_absolute.csv', index=False)
+    df_normalized.to_csv('processed_data/df_normalized.csv', index=False)
 
 if __name__ == '__main__':
     main()
