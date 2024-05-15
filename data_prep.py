@@ -105,7 +105,7 @@ class DataProcessor:
         # number of deaths (stat 4) is the column 'New_deaths'
         # Compute rt number (stat 6)
         df_covid['Rt'] = 0
-        df_covid = df_covid.groupby(for_whom, group_keys=True).apply(self.calculate_rt)
+        df_covid = df_covid.groupby(for_whom).apply(self.calculate_rt)
 
         # Create a new dataframe for normalized data for stats 3 and 5
         df_norm = self.normalize(df_covid)
@@ -126,13 +126,14 @@ class DataProcessor:
 
     def compute_regional_df(self):
         """
-        Compute a COVID-19 dataframe by WHO region.
+        Creates a dataframe COVID-19 by WHO region.
         """
         columns_to_sum = ['New_cases', 'Cumulative_cases',
                         'New_deaths', 'Cumulative_deaths',
                         'population']
         df_regions = self.df_countries.groupby(
-            ['WHO_region', 'Date_reported'])[columns_to_sum].sum()
+            ['WHO_region', 'Date_reported'])[columns_to_sum].sum().reset_index()
+        print(df_regions)
         return df_regions
 
 
@@ -140,24 +141,27 @@ class DataProcessor:
         """
         Appends two dataframes containing Covid data for countries and regions.
         """
-        # Appends the two dataframes together
-        df_countries = df_countries.set_index(['Country', 'Date_reported'])
-        df_regions = df_regions.reset_index(level=[1])
-        df_covid = df_countries._append(df_regions)
+        relevant = ['Country_region', 'Date_reported', 'New_cases',
+                    'Cumulative_cases', 'New_deaths', 'Cumulative_deaths',
+                    'deaths_per_cases', 'Rt']
+        # Append the two dataframes together
+        df_countries = df_countries.rename(columns={'Country': 'Country_region'})
+        df_regions = df_regions.rename(columns={'WHO_region': 'Country_region'})
+        df_covid = pd.concat([df_countries, df_regions], ignore_index=True)
 
-        # Flattens the dataframe and rename first column for compatibilty
-        df_covid = df_covid.reset_index()
-        df_covid = df_covid.rename(columns={df_covid.columns[0]: 'Country_region'},)
+        # Select relevant information
+        df_covid = df_covid[relevant]
         return df_covid
+
     def get_country_df(self):
         """
-        Returns the Covid data by countries.
+        Returns the Covid data for countries.
         """
         return self.df_countries
 
     def get_regional_df(self):
         """
-        Returns the Covid data by regions.
+        Returns the Covid data for regions.
         """
         if self.df_regions is None:
             # Compute the dataframe if it hasn't been computed yet
@@ -170,7 +174,7 @@ def main():
     and save them in the folder processed_data.
     """
     data = DataProcessor()
-    # Compute dataframes for countries and regions
+    # Compute absolute and normalized dataframes for countries and regions
     df_countries = data.get_country_df()
     df_countries, df_countries_norm = data.calc_stats(df_countries, 'Country')
 
@@ -181,7 +185,7 @@ def main():
     df_absolute = data.append_dataframes(df_countries, df_regions)
     df_normalized = data.append_dataframes(df_countries_norm, df_regions_norm)
 
-    # Save data to CSV
+    # Save absolute and normalized data to CSV
     df_absolute.to_csv('processed_data/df_absolute.csv', index=False)
     df_normalized.to_csv('processed_data/df_normalized.csv', index=False)
 
