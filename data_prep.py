@@ -19,7 +19,7 @@ class DataProcessor:
     calculate statistics, normalize data and to append dataframes.
     """
     def __init__(self, for_whom):
-        self.df_covid = None
+        self.df_abs = None
         self.df_norm = None
         self.initialize_data(for_whom)
 
@@ -40,7 +40,7 @@ class DataProcessor:
         Imports COVID-19 data from CSV files.
         """
         # Import the COVID-19 data from WHO-COVID-19-global-data.csv
-        self.df_covid = pd.read_csv(DATA_PATH)
+        self.df_abs = pd.read_csv(DATA_PATH)
 
         # Get 3-letter country code from 'regions.csv'
         self.regions = pd.read_csv(REGION_DATA_PATH)
@@ -52,9 +52,9 @@ class DataProcessor:
         """
         Preprocesses the imported data by merging and cleaning.
         """
-        self.df_covid['Date_reported'] = pd.to_datetime(self.df_covid['Date_reported'])
-        self.df_covid = pd.merge(
-            self.df_covid,
+        self.df_abs['Date_reported'] = pd.to_datetime(self.df_abs['Date_reported'])
+        self.df_abs = pd.merge(
+            self.df_abs,
             self.regions[['alpha-2', 'alpha-3']],
             left_on='Country_code',
             right_on='alpha-2')
@@ -62,15 +62,15 @@ class DataProcessor:
             (self.population['2019 [YR2019]'] +
              self.population['2020 [YR2020]'] +
              self.population['2021 [YR2021]']), 3.0)
-        self.df_covid = pd.merge(
-            self.df_covid,
+        self.df_abs = pd.merge(
+            self.df_abs,
             self.population[['Country Code', 'population']],
             left_on='alpha-3',
             right_on='Country Code')
         # Replace missing values by 0
-        self.df_covid = self.df_covid.fillna(0)
+        self.df_abs = self.df_abs.fillna(0)
         # Drop unnecessary columns
-        self.df_covid = self.df_covid.drop(columns=['alpha-2', 'alpha-3', 'Country Code'])
+        self.df_abs = self.df_abs.drop(columns=['alpha-2', 'alpha-3', 'Country Code'])
 
     def calculate_rt(self, df_covid):
         """
@@ -86,7 +86,7 @@ class DataProcessor:
         # Fill rt for new occurrences with number rt number of next day
         # (possible changing approach later)
         # different approach df['New_cases'] to be determined later
-        df_covid.loc[self.df_covid['Rt'] == np.inf, 'Rt'] = df_covid['Rt'].shift(-1)
+        df_covid.loc[self.df_abs['Rt'] == np.inf, 'Rt'] = df_covid['Rt'].shift(-1)
 
         if df_covid['New_cases'].iloc[0] != 0:
             df_covid['Rt'].iloc[0] = df_covid['Rt'].iloc[1]
@@ -101,9 +101,8 @@ class DataProcessor:
         """
         Calculate deaths per cases.
         """
-        self.df_covid['deaths_per_cases'] = self.df_covid['Cumulative_deaths'].div(
-                                        self.df_covid['Cumulative_cases'], axis=0)
-        self.df_covid['deaths_per_cases'] = self.df_covid['deaths_per_cases'].fillna(0)
+        self.df_abs['deaths_per_cases'] = self.df_abs['Cumulative_deaths'] / self.df_abs['Cumulative_cases']
+        self.df_abs['deaths_per_cases'] = self.df_abs['deaths_per_cases'].fillna(0)
 
     def calc_stats(self, for_whom):
         """
@@ -115,8 +114,8 @@ class DataProcessor:
         # Number of cases (stat 2) is the column 'New_cases' and
         # number of deaths (stat 4) is the column 'New_deaths'
         # Compute rt number (stat 6)
-        self.df_covid['Rt'] = 0
-        self.df_covid = self.df_covid.groupby(for_whom).apply(self.calculate_rt)
+        self.df_abs['Rt'] = 0
+        self.df_abs = self.df_abs.groupby(for_whom).apply(self.calculate_rt)
 
         # Create a new dataframe for normalized data for stats 3 and 5
         self.df_norm = self.normalize()
@@ -126,7 +125,7 @@ class DataProcessor:
         Normalizes the data according to population size and
         scales it up to cases or deaths per 1000000 inhabitants.
         """
-        self.df_norm = self.df_covid.copy()
+        self.df_norm = self.df_abs.copy()
         cols_normalize = ['New_cases', 'Cumulative_cases', 'New_deaths', 'Cumulative_deaths']
 
         self.df_norm[cols_normalize] = (self.df_norm[cols_normalize].div(
@@ -141,7 +140,7 @@ class DataProcessor:
         columns_to_sum = ['New_cases', 'Cumulative_cases',
                         'New_deaths', 'Cumulative_deaths',
                         'population']
-        self.df_covid = self.df_covid.groupby(
+        self.df_abs = self.df_abs.groupby(
             ['WHO_region', 'Date_reported'])[columns_to_sum].sum().reset_index()
 
 
@@ -165,7 +164,7 @@ class DataProcessor:
         """
         Returns absolute and normalized Covid data.
         """
-        return self.df_covid, self.df_norm
+        return self.df_abs, self.df_norm
 
 
 def main():
