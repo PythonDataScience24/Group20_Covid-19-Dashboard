@@ -86,7 +86,7 @@ class DataProcessor:
         # Fill rt for new occurrences with number rt number of next day
         # (possible changing approach later)
         # different approach df['New_cases'] to be determined later
-        df_covid.loc[self.df_abs['Rt'] == np.inf, 'Rt'] = df_covid['Rt'].shift(-1)
+        df_covid.loc[df_covid['Rt'] == np.inf, 'Rt'] = df_covid['Rt'].shift(-1)
 
         if df_covid['New_cases'].iloc[0] != 0:
             df_covid['Rt'].iloc[0] = df_covid['Rt'].iloc[1]
