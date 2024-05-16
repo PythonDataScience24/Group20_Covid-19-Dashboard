@@ -1,0 +1,5 @@
+Week 10 assignment - Group 20
+
+The assignment is done, and pushed to our repo:
+
+https://github.com/PythonDataScience24/Group20_Covid-19-Dashboard
