@@ -12,6 +12,14 @@ The application is a web app, and is viewable in the browser on http://127.0.0.1
 
 The data is imported and simple statistics are calculated.
 
+The dashboard allows the user to input different countries and regions and 
+select a timeframe. 
+
+According to the user input two line plots are generated which display the 
+number of cases and deaths over the timeframe.
+
+Additionally he can select whether he wants the data to be normalized.
+
 ## Background info
 
 We will create a reporting tool for the Covid-19 situation that outputs the 
