@@ -29,6 +29,12 @@ However, if the components (visualization, and the dash app) are fairly independ
 creating three separate modules might be more modular and maintainable in the long run. This would allow for easier testing, debugging,
 and reuse of each component. (likely this approach)
 
+Previously the code was already separated into different methods to promote reusability.
+
+# Abstraction
+
+In the class DataProcessor() we treat regional and country data as COVID-data (= the same)
+
 
 
 
