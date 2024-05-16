@@ -1,4 +1,5 @@
 # Restructure code
+
 Since the script.py module was very complex and the components were unnecessarily heaviliy coupled we
 decided to separate it into two python modules (data processing (data_prep.py), and the dash app) 
 and two data folders for now.
@@ -33,7 +34,7 @@ Previously the code was already separated into different methods to promote reus
 
 # Abstraction
 
-In the class DataProcessor() we treat regional and country data as COVID-data (= the same)
+In the class DataProcessor() we treat regional and country data as COVID-data (= the same).
 
 
 

@@ -15,7 +15,7 @@ POPULATION_NORMALIZER = 1000000
 class DataProcessor:
     """
     This class is responsible for importing and processing the COVID-19 data.
-    It stores abssolute and normalized Covid-data and includes methods to 
+    It stores abssolute and normalized Covid-data and includes methods to
     calculate statistics, normalize data and to append dataframes.
     """
     def __init__(self, for_whom):
@@ -81,18 +81,20 @@ class DataProcessor:
         # The approximation is from:
         # https://medium.com/@m.pierini/time-varying-reproduction-number-rt-theory-and-
         # python-implementation-part-i-basics-and-epiestim-99ea5fc30f51
-        self.df_covid['Rt'] = self.df_covid['New_cases'] / self.df_covid['New_cases'].shift(1)
+        df_covid['Rt'] = df_covid['New_cases'] / df_covid['New_cases'].shift(1)
 
         # Fill rt for new occurrences with number rt number of next day
         # (possible changing approach later)
         # different approach df['New_cases'] to be determined later
-        self.df_covid.loc[self.df_covid['Rt'] == np.inf, 'Rt'] = self.df_covid['Rt'].shift(-1)
+        df_covid.loc[self.df_covid['Rt'] == np.inf, 'Rt'] = df_covid['Rt'].shift(-1)
 
-        if self.df_covid['New_cases'].iloc[0] != 0:
-            self.df_covid['Rt'].iloc[0] = self.df_covid['Rt'].iloc[1]
+        if df_covid['New_cases'].iloc[0] != 0:
+            df_covid['Rt'].iloc[0] = df_covid['Rt'].iloc[1]
 
         # Fill rest with 0
-        self.df_covid['Rt'] = self.df_covid['Rt'].fillna(0)
+        df_covid['Rt'] = df_covid['Rt'].fillna(0)
+
+        return df_covid
 
 
     def calculate_deaths_per_cases(self):
@@ -114,7 +116,7 @@ class DataProcessor:
         # number of deaths (stat 4) is the column 'New_deaths'
         # Compute rt number (stat 6)
         self.df_covid['Rt'] = 0
-        self.df_covid.groupby(for_whom).apply(self.calculate_rt)
+        self.df_covid = self.df_covid.groupby(for_whom).apply(self.calculate_rt)
 
         # Create a new dataframe for normalized data for stats 3 and 5
         self.df_norm = self.normalize()
