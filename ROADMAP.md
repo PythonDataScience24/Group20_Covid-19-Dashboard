@@ -15,9 +15,8 @@
   * and a timespan
 * to get information about the total cases and deaths
 
-Two variants for the information: either
-* in text form, or
-* displayed as graphs
+The information is displayed as graphs.
+* 16.5.2024: done
 
 ### Milestone 3 - Data visualisation - Deadline: May 23
 

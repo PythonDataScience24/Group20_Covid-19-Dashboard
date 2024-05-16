@@ -18,7 +18,7 @@ select a timeframe.
 According to the user input two line plots are generated which display the 
 number of cases and deaths over the timeframe.
 
-Additionally he can select whether he wants the data to be normalized.
+Additionally, the user can select whether he wants the data to be normalized.
 
 ## Background info
 
