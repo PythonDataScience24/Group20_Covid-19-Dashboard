@@ -1,13 +1,9 @@
-"""
-This module contains a dashboard application for visualizing COVID-19 data.
-It includes data processing, normalization, and visualization using Dash.
-"""
 import pandas as pd
 import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output
 import plotly.graph_objs as go
-
+import plotly.express as px
 
 class CovidDashboard:
     """
@@ -57,6 +53,7 @@ class CovidDashboard:
                 dcc.Graph(id='cases-graph'),
                 dcc.Graph(id='deaths-graph'),
             ], style={'display': 'flex', 'flex-direction': 'row'}),
+            dcc.Graph(id='choropleth-map')
         ])
 
     def generate_line_plot(self, df, selected_countries, data_col):
@@ -76,23 +73,45 @@ class CovidDashboard:
         # Sets name for graph title and axis title
         name_of_graph = data_col.replace('_', ' ').replace('New ', '').capitalize()
 
-
         # Adds for every selected country a line
         for country in selected_countries:
-            selected_country_data  = df[df['Country_region'] == country]
+            selected_country_data = df[df['Country_region'] == country]
             fig.add_trace(go.Scatter(x=selected_country_data['Date_reported'],
                                      y=selected_country_data[data_col], mode='lines', name=country))
 
         # Sets the title and the axis titles of the graph
         fig.update_layout(title=f'{name_of_graph} by Country', yaxis_title=f'# of {name_of_graph}')
         return fig
+
+    def generate_choropleth_map(self, df, data_col):
+        """
+        Generates a choropleth map showing the distribution of a specified data column globally.
+        Parameters:
+        - df (dataframe) : dataframe containing values to be visualized
+        - data_col (str): name of the column for which values the choropleth map will be plotted
+        Returns:
+        - fig (plotly.graph_objects.Figure):
+        choropleth map showing the global distribution of the specified data column
+        """
+        fig = px.choropleth(
+            df,
+            locations="Country_region",
+            locationmode='country names',
+            color=data_col,
+            hover_name="Country_region",
+            color_continuous_scale=px.colors.sequential.Plasma,
+            title=f'Global distribution of {data_col.replace("_", " ").capitalize()}'
+        )
+        return fig
+
     def register_callbacks(self):
         """
         Registers the callbacks for the Dash application.
         """
         @self.app.callback(
             [Output('cases-graph', 'figure'),
-             Output('deaths-graph', 'figure')],
+             Output('deaths-graph', 'figure'),
+             Output('choropleth-map', 'figure')],
             [Input('country-dropdown', 'value'),
              Input('date-picker', 'start_date'),
              Input('date-picker', 'end_date'),
@@ -107,7 +126,7 @@ class CovidDashboard:
 
             # filter so only within given time range cases and deaths computed
             df_selected = df_selected[(df_selected['Date_reported'] >= start_date) &
-                                    (df_selected['Date_reported'] <= end_date)]
+                                      (df_selected['Date_reported'] <= end_date)]
 
             # graph showing number of cases over selected time period
             fig_cases = self.generate_line_plot(df_selected, selected_countries, "New_cases")
@@ -115,7 +134,10 @@ class CovidDashboard:
             # graph showing number of deaths over selected time period
             fig_deaths = self.generate_line_plot(df_selected, selected_countries, "New_deaths")
 
-            return fig_cases, fig_deaths
+            # choropleth map showing global distribution of cumulative cases
+            fig_choropleth = self.generate_choropleth_map(df_selected, "Cumulative_cases")
+
+            return fig_cases, fig_deaths, fig_choropleth
 
     def run(self):
         """
