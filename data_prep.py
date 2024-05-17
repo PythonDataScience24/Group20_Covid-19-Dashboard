@@ -18,10 +18,9 @@ class DataProcessor:
     It stores abssolute and normalized Covid-data and includes methods to
     calculate statistics, normalize data and to append dataframes.
     """
-    def __init__(self, for_whom):
+    def __init__(self):
         self.df_abs = None
         self.df_norm = None
-        self.initialize_data(for_whom)
 
     def initialize_data(self, for_whom):
         """
@@ -97,19 +96,26 @@ class DataProcessor:
         return df_covid
 
 
-    def calculate_deaths_per_cases(self):
+    def calculate_deaths_per_cases(self, df_covid):
         """
-        Calculate deaths per cases.
+        Calculate deaths per cases from the first date.
         """
-        self.df_abs['deaths_per_cases'] = self.df_abs['Cumulative_deaths'] / self.df_abs['Cumulative_cases']
-        self.df_abs['deaths_per_cases'] = self.df_abs['deaths_per_cases'].fillna(0)
+        # Calculate the total cumulative cases and deaths
+        df_covid['Cumulative_cases'] = df_covid['Cumulative_cases'] - df_covid['Cumulative_cases'].iloc[0] + df_covid['New_cases'].iloc[0]
+        df_covid['Cumulative_deaths'] = df_covid['Cumulative_deaths'] - df_covid['Cumulative_deaths'].iloc[0] + df_covid['New_deaths'].iloc[0]
+
+        # Calculate deaths per cases
+        df_covid['deaths_per_cases'] = df_covid['Cumulative_deaths'] / df_covid['Cumulative_cases']
+        df_covid['deaths_per_cases'] = df_covid['deaths_per_cases'].fillna(0)
+
+        return df_covid
 
     def calc_stats(self, for_whom):
         """
         Calculate stats related to COVID-19 cases and deaths.
         """
         # Compute deaths per cases (stat 1)
-        self.calculate_deaths_per_cases()
+        self.df_abs = self.df_abs.groupby(for_whom).apply(self.calculate_deaths_per_cases)
 
         # Number of cases (stat 2) is the column 'New_cases' and
         # number of deaths (stat 4) is the column 'New_deaths'
@@ -126,7 +132,8 @@ class DataProcessor:
         scales it up to cases or deaths per 1000000 inhabitants.
         """
         self.df_norm = self.df_abs.copy()
-        cols_normalize = ['New_cases', 'Cumulative_cases', 'New_deaths', 'Cumulative_deaths']
+        cols_normalize = ['New_cases', 'Cumulative_cases', 'New_deaths',
+                          'Cumulative_deaths', 'deaths_per_cases']
 
         self.df_norm[cols_normalize] = (self.df_norm[cols_normalize].div(
                                     self.df_norm['population'], axis=0) * POPULATION_NORMALIZER)
@@ -174,8 +181,11 @@ def main():
     """
 
     # Compute absolute and normalized dataframes for countries and regions
-    covid_countries = DataProcessor('Country')
-    covid_regions = DataProcessor('WHO_region')
+    covid_countries = DataProcessor()
+    covid_regions = DataProcessor()
+
+    covid_countries.initialize_data('Country')
+    covid_regions.initialize_data('WHO_region')
 
     df_countries, df_countries_norm = covid_countries.get_data()
     df_regions, df_regions_norm = covid_regions.get_data()
