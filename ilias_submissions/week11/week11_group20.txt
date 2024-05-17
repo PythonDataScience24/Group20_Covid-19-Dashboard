@@ -1,0 +1,11 @@
+Week 11 assignment - Group 20
+
+1) Code the third task of your project
+
+2) Implement at least one set of try and except blocks in your project
+
+3) Implement a unit test with at least four test cases
+
+4) Provide feedback to another group in the form of an issue on their project
+
+    Issue created by Olivier Mingard: https://..........
