@@ -10,6 +10,7 @@ import plotly.graph_objs as go
 import plotly.express as px
 import data_prep
 
+
 class Visualisation:
     """
     This is a class containing different functions for creating plots out of data.
@@ -40,7 +41,10 @@ class Visualisation:
             fig.add_trace(go.Scatter(x=selected_country_data['Date_reported'],
                                      y=selected_country_data[data_col], mode='lines', name=country))
 
-        fig.update_layout(title=f'{name_of_graph} by Country', yaxis_title=f'# of {name_of_graph}')
+        fig.update_layout(title=f'{name_of_graph} by Country', yaxis_title=f'# of {name_of_graph}',
+                          font=dict(family='Arial', size=16, color='#7f7f7f'),
+                          plot_bgcolor='white', paper_bgcolor='white'
+                          )
         return fig
 
     def plot_bar(self, df, selected_countries, data_col):
@@ -56,7 +60,11 @@ class Visualisation:
                                  y=selected_country_data[data_col],
                                  name=country_region))
 
-        fig.update_layout(title=title)
+        fig.update_layout(
+            title=title,
+            font=dict(family='Arial', size=16, color='#7f7f7f'),
+            plot_bgcolor='white', paper_bgcolor='white'
+        )
         return fig
 
     def compute_data(self, df, data_col):
@@ -109,39 +117,59 @@ class CovidDashboard:
         Creates the layout of the Dash application.
         """
         return html.Div([
-            html.H1('Covid-19'),
+            html.H1('COVID-19 Dashboard', style={'textAlign': 'center', 'color': '#003366'}),
             html.Div(
-                [html.Label('Select Country'),
-                 dcc.Dropdown(
-                     id='country-dropdown',
-                     options=[{'label': country, 'value': country} for
-                              country in self.df_absolute['Country_region'].unique()],
-                     value=['Switzerland', 'EURO', 'Türkiye'],
-                     multi=True
-                 ),
-                 html.Label('Select timeframe: '),
-                 dcc.DatePickerRange(
-                     id='date-picker',
-                     start_date=self.df_absolute['Date_reported'].min(),
-                     end_date=self.df_absolute['Date_reported'].max(),
-                     display_format='MM/YYYY', ),
-                 html.Label('Normalize Data: '),
-                 dcc.Checklist(
-                     id='normalize-checklist',
-                     options=[{'label': 'Normalize', 'value': 'normalize'}],
-                     value=['normalize']
-                 )], id='control-container', style={'display': 'flex', 'flex-direction': 'row'}),
-
+                [html.Div(
+                    [html.Label('Select Country', style={'fontWeight': 'bold'}),
+                     dcc.Dropdown(
+                         id='country-dropdown',
+                         options=[{'label': country, 'value': country} for
+                                  country in self.df_absolute['Country_region'].unique()],
+                         value=['Switzerland', 'EURO', 'Türkiye'],
+                         multi=True,
+                         style={'width': '100%'}
+                     ),
+                     ],
+                    style={'flex': '1', 'margin-right': '10px'}
+                ),
+                    html.Div(
+                        [html.Label('Select Timeframe', style={'fontWeight': 'bold'}),
+                         dcc.DatePickerRange(
+                             id='date-picker',
+                             start_date=self.df_absolute['Date_reported'].min(),
+                             end_date=self.df_absolute['Date_reported'].max(),
+                             display_format='MM/YYYY',
+                             style={'width': '100%'}
+                         ),
+                         ],
+                        style={'flex': '1', 'margin-right': '10px'}
+                    ),
+                    html.Div(
+                        [html.Label('Normalize Data', style={'fontWeight': 'bold'}),
+                         dcc.Checklist(
+                             id='normalize-checklist',
+                             options=[{'label': 'Normalize', 'value': 'normalize'}],
+                             value=['normalize'],
+                             style={'margin-top': '10px'}
+                         ),
+                         ],
+                        style={'flex': '1'}
+                    )
+                ],
+                id='control-container',
+                style={'display': 'flex', 'flex-direction': 'row', 'padding': '10px'}
+            ),
             html.Div([
-                dcc.Graph(id='cases-graph'),
-                dcc.Graph(id='deaths-per-cases-graph')
-            ], style={'display': 'flex', 'flex-direction': 'row'}),
-
-            html.Div([
-                dcc.Graph(id='deaths-graph'),
-                dcc.Graph(id='rt-graph')
-            ], style={'display': 'flex', 'flex-direction': 'row'})
-        ])
+                html.Div([
+                    dcc.Graph(id='cases-graph', style={'width': '100%', 'display': 'inline-block'}),
+                    dcc.Graph(id='deaths-graph', style={'width': '100%', 'display': 'inline-block'}),
+                ], style={'width': '48%', 'display': 'inline-block', 'vertical-align': 'top'}),
+                html.Div([
+                    dcc.Graph(id='rt-graph', style={'width': '100%', 'display': 'inline-block'}),
+                    dcc.Graph(id='deaths-per-cases-graph', style={'width': '100%', 'display': 'inline-block'}),
+                ], style={'width': '48%', 'display': 'inline-block', 'vertical-align': 'top'}),
+            ], style={'display': 'flex', 'justify-content': 'space-between'}),
+        ], style={'font-family': 'Arial, sans-serif', 'backgroundColor': '#f9f9f9', 'padding': '20px'})
 
     def register_callbacks(self):
         """
