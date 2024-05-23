@@ -9,3 +9,5 @@ Week 11 assignment - Group 20
     Issue created by Anto Andjelic: https://github.com/PythonDataScience24/Group22_Air_quality_Dashboard/issues/2
 
     Issue created by David Nhan: https://github.com/PythonDataScience24/Personal_Task_manager/issues/10
+
+    Issue created by Emre Alma: https://github.com/PythonDataScience24/movie-recommendation-system/issues/7
