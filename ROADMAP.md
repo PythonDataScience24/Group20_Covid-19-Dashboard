@@ -23,3 +23,6 @@ The information is displayed as graphs.
 Provide visualisations about the trend of infections and deaths across 
 * countries, and
 * regions
+
+
+* 23.5.2024: done
