@@ -4,7 +4,7 @@ Week 11 assignment - Group 20
 
 4) Provide feedback to another group in the form of an issue on their project
 
-    Issue created by Olivier Mingard: https://github.com/PythonDataScience24/PfD_Covid_19_dashboard/issues/36
+    Issue created by Olivier Mingard and Emre Alma: https://github.com/PythonDataScience24/PfD_Covid_19_dashboard/issues/36
 
     Issue created by Anto Andjelic: https://github.com/PythonDataScience24/Group22_Air_quality_Dashboard/issues/2
 
