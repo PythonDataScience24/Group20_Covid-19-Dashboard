@@ -1,0 +1,101 @@
+1. Virtual environment, requirements.txt
+----------------------------------------
+
+The requirements.txt is check in and updated.
+
+Console log of completion of tasks:
+
+C:\studies\pfds\Group20_Covid-19-Dashboard>python -m venv C:\studies\pfds\Group20_Covid-19-Dashboard
+
+C:\studies\pfds\Group20_Covid-19-Dashboard>Scripts\activate.bat
+
+(Group20_Covid-19-Dashboard) C:\studies\pfds\Group20_Covid-19-Dashboard>pip install -r requirements.txt
+Collecting pandas
+  Downloading pandas-2.2.2-cp39-cp39-win_amd64.whl (11.6 MB)
+     |████████████████████████████████| 11.6 MB 6.4 MB/s
+Collecting numpy
+  Downloading numpy-1.26.4-cp39-cp39-win_amd64.whl (15.8 MB)
+     |████████████████████████████████| 15.8 MB 6.8 MB/s
+Collecting dash
+  Downloading dash-2.17.0-py3-none-any.whl (7.5 MB)
+     |████████████████████████████████| 7.5 MB 6.4 MB/s
+Collecting plotly
+  Downloading plotly-5.22.0-py3-none-any.whl (16.4 MB)
+     |████████████████████████████████| 16.4 MB 6.4 MB/s
+Collecting python-dateutil>=2.8.2
+  Using cached python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+Collecting pytz>=2020.1
+  Using cached pytz-2024.1-py2.py3-none-any.whl (505 kB)
+Collecting tzdata>=2022.7
+  Using cached tzdata-2024.1-py2.py3-none-any.whl (345 kB)
+Collecting dash-html-components==2.0.0
+  Downloading dash_html_components-2.0.0-py3-none-any.whl (4.1 kB)
+Requirement already satisfied: setuptools in c:\studies\pfds\group20_covid-19-dashboard\lib\site-packages (from dash->-r requirements.txt (line 3)) (57.4.0)
+Collecting retrying
+  Downloading retrying-1.3.4-py3-none-any.whl (11 kB)
+Collecting importlib-metadata
+  Downloading importlib_metadata-7.1.0-py3-none-any.whl (24 kB)
+Collecting Flask<3.1,>=1.0.4
+  Downloading flask-3.0.3-py3-none-any.whl (101 kB)
+     |████████████████████████████████| 101 kB 6.4 MB/s
+Collecting requests
+  Downloading requests-2.32.3-py3-none-any.whl (64 kB)
+     |████████████████████████████████| 64 kB 4.5 MB/s
+Collecting dash-core-components==2.0.0
+  Downloading dash_core_components-2.0.0-py3-none-any.whl (3.8 kB)
+Collecting typing-extensions>=4.1.1
+  Downloading typing_extensions-4.12.0-py3-none-any.whl (37 kB)
+Collecting dash-table==5.0.0
+  Downloading dash_table-5.0.0-py3-none-any.whl (3.9 kB)
+Collecting nest-asyncio
+  Using cached nest_asyncio-1.6.0-py3-none-any.whl (5.2 kB)
+Collecting Werkzeug<3.1
+  Downloading werkzeug-3.0.3-py3-none-any.whl (227 kB)
+     |████████████████████████████████| 227 kB ...
+Collecting packaging
+  Using cached packaging-24.0-py3-none-any.whl (53 kB)
+Collecting tenacity>=6.2.0
+  Downloading tenacity-8.3.0-py3-none-any.whl (25 kB)
+Collecting Jinja2>=3.1.2
+  Downloading jinja2-3.1.4-py3-none-any.whl (133 kB)
+     |████████████████████████████████| 133 kB 6.4 MB/s
+Collecting itsdangerous>=2.1.2
+  Downloading itsdangerous-2.2.0-py3-none-any.whl (16 kB)
+Collecting click>=8.1.3
+  Downloading click-8.1.7-py3-none-any.whl (97 kB)
+     |████████████████████████████████| 97 kB 6.4 MB/s
+Collecting blinker>=1.6.2
+  Downloading blinker-1.8.2-py3-none-any.whl (9.5 kB)
+Collecting colorama
+  Using cached colorama-0.4.6-py2.py3-none-any.whl (25 kB)
+Collecting zipp>=0.5
+  Downloading zipp-3.19.0-py3-none-any.whl (8.3 kB)
+Collecting MarkupSafe>=2.0
+  Downloading MarkupSafe-2.1.5-cp39-cp39-win_amd64.whl (17 kB)
+Collecting six>=1.5
+  Using cached six-1.16.0-py2.py3-none-any.whl (11 kB)
+Collecting charset-normalizer<4,>=2
+  Downloading charset_normalizer-3.3.2-cp39-cp39-win_amd64.whl (100 kB)
+     |████████████████████████████████| 100 kB ...
+Collecting idna<4,>=2.5
+  Using cached idna-3.7-py3-none-any.whl (66 kB)
+Collecting urllib3<3,>=1.21.1
+  Using cached urllib3-2.2.1-py3-none-any.whl (121 kB)
+Collecting certifi>=2017.4.17
+  Using cached certifi-2024.2.2-py3-none-any.whl (163 kB)
+Installing collected packages: zipp, MarkupSafe, colorama, Werkzeug, urllib3, tenacity, six, packaging, Jinja2, itsdangerous, importlib-metadata, idna, click, charset-normalizer, certifi, blinker, tzdata, typing-extensions, retrying, requests, pytz, python-dateutil, plotly, numpy, nest-asyncio, Flask, dash-table, dash-html-components, dash-core-components, pandas, dash
+Successfully installed Flask-3.0.3 Jinja2-3.1.4 MarkupSafe-2.1.5 Werkzeug-3.0.3 blinker-1.8.2 certifi-2024.2.2 charset-normalizer-3.3.2 click-8.1.7 colorama-0.4.6 dash-2.17.0 dash-core-components-2.0.0 dash-html-components-2.0.0 dash-table-5.0.0 idna-3.7 importlib-metadata-7.1.0 itsdangerous-2.2.0 nest-asyncio-1.6.0 numpy-1.26.4 packaging-24.0 pandas-2.2.2 plotly-5.22.0 python-dateutil-2.9.0.post0 pytz-2024.1 requests-2.32.3 retrying-1.3.4 six-1.16.0 tenacity-8.3.0 typing-extensions-4.12.0 tzdata-2024.1 urllib3-2.2.1 zipp-3.19.0
+WARNING: You are using pip version 21.2.3; however, version 24.0 is available.
+You should consider upgrading via the 'C:\studies\pfds\Group20_Covid-19-Dashboard\Scripts\python.exe -m pip install --upgrade pip' command.
+
+(Group20_Covid-19-Dashboard) C:\studies\pfds\Group20_Covid-19-Dashboard>pip3 freeze > requirements.txt
+
+(Group20_Covid-19-Dashboard) C:\studies\pfds\Group20_Covid-19-Dashboard>python script.py
+Dash is running on http://127.0.0.1:8050/
+
+ * Serving Flask app 'script'
+ * Debug mode: on
+C:\studies\pfds\Group20_Covid-19-Dashboard\script.py:82: DeprecationWarning:
+
+
+

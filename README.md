@@ -2,9 +2,8 @@
 
 ## Running the program
 
-Run the script `script.py` with python 3, without any args. Make sure that 
-the modules listed in `requirements.txt` are installed in the python 
-environment.
+Run the script `script.py` with python 3, without any args. Install the 
+required modules in your virtual environment with `pip install -r requirements.txt`.
 
 The application is a web app, and is viewable in the browser on http://127.0.0.1:8050/
 
@@ -15,16 +14,14 @@ The data is imported and simple statistics are calculated.
 The dashboard allows the user to input different countries and regions and 
 select a timeframe. 
 
-According to the user input two line plots are generated which display the 
-number of cases and deaths over the timeframe.
+According to the user input (a selection of countries, and a selected timeframe)
+cases and deaths are plotted in line plots, and the average Rt number and
+deaths per cases are plotted as bar plots (the average value over the
+selected timeframe).
 
-Additionally, the user can select whether he wants the data to be normalized.
+Additionally, the user can select whether the data should be normalized.
 
 ## Background info
-
-We will create a reporting tool for the Covid-19 situation that outputs the 
-cases and deaths across the world. This readme will be updated and expanded 
-once we actually start with the project's implementation.
 
 Our goal is to compute simple statistics of the Covid-19 infections data, 
 and then provide visualisations about the trend of infections and deaths
