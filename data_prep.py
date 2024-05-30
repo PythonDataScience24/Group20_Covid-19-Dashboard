@@ -92,13 +92,14 @@ class DataProcessor:
         # Fill rt for new occurrences with number rt number of next day
         # (possible changing approach later)
         # different approach df['New_cases'] to be determined later
-        df_covid.loc[df_covid['Rt'] == np.inf, 'Rt'] = df_covid['Rt'].shift(-1)
-
-        if df_covid['New_cases'].iloc[0] != 0:
-            df_covid['Rt'].iloc[0] = df_covid['Rt'].iloc[1]
+        df_covid['Rt'].replace([np.inf, -np.inf], np.nan, inplace=True)
+        df_covid['Rt'].fillna(method='bfill', inplace=True)
 
         # Fill rest with 0
-        df_covid['Rt'] = df_covid['Rt'].fillna(0)
+        df_covid['Rt'].fillna(0, inplace=True)
+
+        if df_covid['New_cases'].iloc[0] == 0:
+            df_covid['Rt'].iloc[0] = 0
 
         return df_covid
 
@@ -113,7 +114,7 @@ class DataProcessor:
 
         # Calculate deaths per cases
         df_covid['deaths_per_cases'] = df_covid['Cumulative_deaths'] / df_covid['Cumulative_cases']
-        df_covid['deaths_per_cases'] = df_covid['deaths_per_cases'].fillna(0)
+        df_covid['deaths_per_cases'].fillna(0, inplace=True)
 
         return df_covid
 
@@ -122,13 +123,12 @@ class DataProcessor:
         Calculate stats related to COVID-19 cases and deaths.
         """
         # Compute deaths per cases (stat 1)
-        self.df_abs = self.df_abs.groupby(for_whom).apply(self.calculate_deaths_per_cases)
+        self.df_abs = self.calculate_deaths_per_cases(self.df_abs)
 
         # Number of cases (stat 2) is the column 'New_cases' and
         # number of deaths (stat 4) is the column 'New_deaths'
         # Compute rt number (stat 6)
-        self.df_abs['Rt'] = 0
-        self.df_abs = self.df_abs.groupby(for_whom).apply(self.calculate_rt)
+        self.df_abs = self.calculate_rt(self.df_abs)
 
         # Create a new dataframe for normalized data for stats 3 and 5
         self.df_norm = self.normalize()
