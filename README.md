@@ -21,8 +21,14 @@ selected timeframe).
 
 Additionally, the user can select whether the data should be normalized.
 
-## Background info
+## Project Information
 
-Our goal is to compute simple statistics of the Covid-19 infections data, 
-and then provide visualisations about the trend of infections and deaths
-across countries, so that a user can get an overview of the data.
+This project was completed as part of the Programming for Data Science 2024 class. 
+Further development is not guaranteed.
+
+The primary objective of this project is to compute simple statistics of COVID-19 infection data and 
+provide visualizations that depict the trends of infections and deaths across various countries. 
+This allows users to gain an insightful overview of the data.
+
+It should act as a comparison tool for assessing the COVID-19 situation across different countries and
+regions.
