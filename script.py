@@ -7,7 +7,6 @@ import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output
 import plotly.graph_objs as go
-import plotly.express as px
 import data_prep
 
 
@@ -120,7 +119,7 @@ class CovidDashboard:
             html.H1('COVID-19 Dashboard', style={'textAlign': 'center', 'color': '#003366'}),
             html.Div(
                 [html.Div(
-                    [html.Label('Select Country', style={'fontWeight': 'bold'}),
+                    [html.Label('Select Countries/Regions', style={'fontWeight': 'bold'}),
                      dcc.Dropdown(
                          id='country-dropdown',
                          options=[{'label': country, 'value': country} for
@@ -148,7 +147,7 @@ class CovidDashboard:
                         [html.Label('Normalize Data', style={'fontWeight': 'bold'}),
                          dcc.Checklist(
                              id='normalize-checklist',
-                             options=[{'label': 'Normalize', 'value': 'normalize'}],
+                             options=[{'label': 'Normalize per one million inhabitants', 'value': 'normalize'}],
                              value=['normalize'],
                              style={'margin-top': '10px'}
                          ),
