@@ -26,12 +26,19 @@ class DataProcessor:
         """
         Imports, processes and computes the data for countries or regions.
         """
-        self.import_data()
-        self.preprocess_data()
+        try:
+            self.import_data()
+            self.preprocess_data()
 
-        if for_whom == 'WHO_region':
-            self.compute_regional_df()
-        self.calc_stats(for_whom)
+            if for_whom == 'WHO_region':
+                self.compute_regional_df()
+            self.calc_stats(for_whom)
+        except FileNotFoundError as e:
+            print(f"Error {e}. Please ensure that the files are present.")
+        except pd.errors.EmptyDataError as e:
+            print(f"Error {e}: The data files are empty or corrupted")
+        except Exception as e:
+            print(f"Error {e}: Unexpected error occurred.")
 
 
     def import_data(self):
