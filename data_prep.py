@@ -201,7 +201,8 @@ def main():
     df_absolute = covid_countries.append_dataframes(df_countries, df_regions)
     df_normalized = covid_countries.append_dataframes(df_countries_norm, df_regions_norm)
 
-    # Save absolute and normalized data to CSV
+
+    # Save absolute and normalized data as CSV
     df_absolute.to_csv('processed_data/df_absolute.csv', index=False)
     df_normalized.to_csv('processed_data/df_normalized.csv', index=False)
 
